@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>タスク計画書テンプレート</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      /* ---------- color tokens (pure white base, paper-like) ---------- */
+      --paper:       #FFFFFF;
+      --ink:         #1A1A1A;
+      --ink-soft:    #4A4A4A;
+      --ink-mute:    #767676;
+      --rule:        #E5E5E5;
+      --rule-strong: #1A1A1A;
+      --tint:        #F7F7F5;
+      --tint-soft:   #FBFBFA;
+
+      --sev-high-bg:  #FBE9E2;
+      --sev-high-fg:  #8A3B1E;
+      --sev-mid-bg:   #F4ECDA;
+      --sev-mid-fg:   #6B5320;
+      --sev-low-bg:   #E8EEDF;
+      --sev-low-fg:   #4B5C39;
+
+      --sans:    'Inter', 'Noto Sans JP', system-ui, -apple-system, sans-serif;
+      --mono:    'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html { -webkit-text-size-adjust: 100%; }
+
+    body {
+      font-family: var(--sans);
+      font-feature-settings: "palt" 1;
+      background: var(--paper);
+      color: var(--ink);
+      line-height: 1.7;
+      font-size: 15px;
+      padding: 64px 32px 120px;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    .page {
+      max-width: 880px;
+      margin: 0 auto;
+    }
+
+    /* ---------- document header ---------- */
+
+    .doc-head {
+      border-bottom: 2px solid var(--rule-strong);
+      padding-bottom: 28px;
+      margin-bottom: 48px;
+    }
+
+    h1 {
+      font-family: var(--sans);
+      font-weight: 700;
+      font-size: 30px;
+      line-height: 1.3;
+      color: var(--ink);
+      letter-spacing: -0.01em;
+    }
+
+    /* ---------- section ---------- */
+
+    section {
+      margin-bottom: 56px;
+    }
+
+    h2 {
+      font-family: var(--sans);
+      font-weight: 600;
+      font-size: 20px;
+      color: var(--ink);
+      letter-spacing: -0.005em;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--rule-strong);
+      margin-bottom: 24px;
+    }
+
+    h3 {
+      font-family: var(--sans);
+      font-weight: 600;
+      font-size: 13px;
+      color: var(--ink);
+      margin-top: 24px;
+      margin-bottom: 8px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      padding-left: 10px;
+      border-left: 3px solid var(--ink);
+    }
+    h3:first-child { margin-top: 0; }
+
+    /* ---------- task list ---------- */
+
+    .task-list {
+      list-style: none;
+    }
+    .task-list > li {
+      display: flex;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--rule);
+    }
+    .task-list > li:last-child { border-bottom: none; }
+    .task-list .task-body {
+      font-size: 14.5px;
+      color: var(--ink);
+      line-height: 1.65;
+      flex: 1;
+      padding-right: 14px;
+    }
+    .task-list .due {
+      font-family: var(--mono);
+      font-size: 11.5px;
+      color: var(--ink);
+      white-space: nowrap;
+      padding: 3px 9px;
+      background: var(--paper);
+      border: 1px dashed var(--rule);
+      border-radius: 4px;
+      letter-spacing: 0.01em;
+      flex-shrink: 0;
+      font-weight: 500;
+    }
+
+    .task-list.muted .task-body { color: var(--ink); }
+    .task-list.muted > li { align-items: flex-start; }
+    .task-list.muted .due { margin-top: 0; }
+
+    /* ---------- coordination ---------- */
+
+    .coord-group { margin-bottom: 8px; }
+
+    /* ---------- risk table ---------- */
+
+    .risk-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13.5px;
+      border: 1px solid var(--rule);
+      table-layout: fixed;
+    }
+    .risk-table thead th {
+      font-family: var(--sans);
+      font-weight: 600;
+      font-size: 12px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--ink);
+      text-align: left;
+      padding: 12px 14px;
+      background: var(--tint);
+      border-bottom: 1.5px solid var(--rule-strong);
+      vertical-align: bottom;
+    }
+    .risk-table tbody td {
+      padding: 14px;
+      border-top: 1px solid var(--rule);
+      vertical-align: top;
+      color: var(--ink-soft);
+      line-height: 1.6;
+    }
+    .risk-table tbody tr:nth-child(even) td {
+      background: var(--tint-soft);
+    }
+    .risk-table tbody td.col-risk-cell {
+      color: var(--ink);
+      font-weight: 500;
+    }
+    .risk-table .col-risk      { width: 28%; }
+    .risk-table .col-sev       { width: 10%; }
+    .risk-table .col-cause     { width: 22%; }
+    .risk-table .col-action    { width: 26%; }
+    .risk-table .col-deadline  { width: 14%; }
+
+    .risk-table td.empty { color: var(--ink-mute); }
+    .risk-table td.empty::before { content: "—"; }
+
+    .sev {
+      display: inline-block;
+      font-family: var(--mono);
+      font-size: 10.5px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 4px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .sev.high { background: var(--sev-high-bg); color: var(--sev-high-fg); }
+    .sev.mid  { background: var(--sev-mid-bg);  color: var(--sev-mid-fg); }
+    .sev.low  { background: var(--sev-low-bg);  color: var(--sev-low-fg); }
+
+    .deadline {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--ink);
+    }
+
+    /* ---------- inline elements ---------- */
+
+    code {
+      font-family: var(--mono);
+      font-size: 0.88em;
+      background: var(--tint);
+      padding: 1px 6px;
+      border-radius: 3px;
+      color: var(--ink);
+    }
+
+    strong { font-weight: 600; color: var(--ink); }
+
+    em {
+      font-style: normal;
+      color: var(--ink-mute);
+      font-size: 0.92em;
+    }
+
+    /* 補足事項 — task-body 内で <br> の後に続く black text の説明 */
+    .note {
+      display: inline-block;
+      margin-top: 4px;
+      font-size: 13px;
+      color: var(--ink);
+      line-height: 1.6;
+    }
+
+    /* ---------- responsive ---------- */
+
+    @media (max-width: 720px) {
+      body { padding: 40px 20px 80px; font-size: 14px; }
+      h1 { font-size: 24px; }
+      h2 { font-size: 17px; }
+
+      .risk-table thead { display: none; }
+      .risk-table, .risk-table tbody, .risk-table tr, .risk-table td { display: block; width: 100%; }
+      .risk-table tr {
+        border-top: 1px solid var(--rule);
+        padding: 10px 0;
+      }
+      .risk-table tbody tr:nth-child(even) td { background: transparent; }
+      .risk-table tbody td {
+        border-top: none;
+        padding: 4px 0;
+      }
+      .risk-table tbody td::before {
+        content: attr(data-label);
+        display: inline-block;
+        width: 80px;
+        font-family: var(--mono);
+        font-size: 11px;
+        text-transform: uppercase;
+        color: var(--ink-mute);
+        letter-spacing: 0.04em;
+      }
+    }
+
+    /* ---------- print / pdf ---------- */
+
+    @media print {
+      body { padding: 24mm 18mm; font-size: 11pt; background: #FFFFFF; }
+      .page { max-width: none; }
+      h1 { font-size: 22pt; }
+      h2 { font-size: 14pt; }
+      section { margin-bottom: 32px; page-break-inside: avoid; }
+      .risk-table { page-break-inside: avoid; }
+      .task-list > li { page-break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+
+    <!-- ============================================================== -->
+    <!-- DOC HEADER                                                      -->
+    <!-- ============================================================== -->
+    <header class="doc-head">
+      <h1>決済 API のレートリミット導入</h1>
+    </header>
+
+    <!-- ============================================================== -->
+    <!-- やること                                                        -->
+    <!-- ============================================================== -->
+    <section>
+      <h2>やること</h2>
+      <ul class="task-list">
+        <li>
+          <span class="task-body">既存の <code>POST /payments</code> エンドポイントの直近 30 日アクセスログを集計し、p99 と異常ピークを把握する</span>
+          <span class="due">2026-05-12</span>
+        </li>
+        <li>
+          <span class="task-body">Redis ベースのトークンバケット実装を <code>packages/ratelimit</code> に追加 (ユーザー単位 / IP 単位の両系統)</span>
+          <span class="due">2026-05-14</span>
+        </li>
+        <li>
+          <span class="task-body">超過時に返す <code>429</code> レスポンスのスキーマ確定 (<code>Retry-After</code> ヘッダ含む) と OpenAPI 定義の更新</span>
+          <span class="due">2026-05-14</span>
+        </li>
+        <li>
+          <span class="task-body">staging で負荷テスト (k6 シナリオ) を流し、しきい値設定の妥当性を検証する</span>
+          <span class="due">2026-05-15</span>
+        </li>
+        <li>
+          <span class="task-body">フィーチャーフラグ <code>ratelimit_v1</code> 配下で staging に投入、社内利用者へドッグフード依頼</span>
+          <span class="due">2026-05-15</span>
+        </li>
+        <li>
+          <span class="task-body">Redis クラスタの障害時フォールバック (fail-open) の実現性調査とミニ PoC</span>
+          <span class="due">2026-05-16</span>
+        </li>
+      </ul>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- やらないこと                                                    -->
+    <!-- ============================================================== -->
+    <section>
+      <h2>やらないこと</h2>
+      <ul class="task-list muted">
+        <li>
+          <span class="task-body">他エンドポイント (<code>/refunds</code>, <code>/webhooks</code>) へのレートリミット適用<br><span class="note">今週は payments のみに集中する。来週以降に横展開する想定で、別タスクとして起票済み。</span></span>
+          <span class="due">来週以降</span>
+        </li>
+        <li>
+          <span class="task-body">ダッシュボード上での超過状況の可視化 UI 実装<br><span class="note">SRE 側のメトリクス基盤 (Grafana) で吸収する想定。本タスクではメトリクスを emit するところまでで、UI は対象外とする。</span></span>
+          <span class="due">別タスク</span>
+        </li>
+        <li>
+          <span class="task-body">本番への段階リリース (10% → 100%)<br><span class="note">staging 検証完了後、来週月曜のリリース判定会議で方針を決める。今週は staging まで。</span></span>
+          <span class="due">来週</span>
+        </li>
+      </ul>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- 連携                                                            -->
+    <!-- ============================================================== -->
+    <section>
+      <h2>連携</h2>
+
+      <div class="coord-group">
+        <h3>相談</h3>
+        <ul class="task-list">
+          <li>
+            <span class="task-body">テックリード田中さんへしきい値の初期値レビュー依頼</span>
+            <span class="due">2026-05-13</span>
+          </li>
+          <li>
+            <span class="task-body">SRE チームへ Redis クラスタの容量見積もりと監視設定の相談</span>
+            <span class="due">2026-05-13</span>
+          </li>
+          <li>
+            <span class="task-body">プロダクトマネージャーへ <code>429</code> レスポンス時のクライアント側影響範囲を確認</span>
+            <span class="due">2026-05-12</span>
+          </li>
+        </ul>
+      </div>
+
+      <div class="coord-group">
+        <h3>報告</h3>
+        <ul class="task-list">
+          <li>
+            <span class="task-body">スプリントレビューで staging 検証結果と来週リリース判定向けの資料を共有</span>
+            <span class="due">2026-05-16</span>
+          </li>
+          <li>
+            <span class="task-body">API 利用クライアント (社内 5 チーム) へ <code>429</code> ハンドリング方針の事前アナウンス</span>
+            <span class="due">2026-05-15</span>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- リスク管理                                                      -->
+    <!-- ============================================================== -->
+    <section>
+      <h2>リスク管理</h2>
+      <table class="risk-table">
+        <thead>
+          <tr>
+            <th class="col-risk">リスク</th>
+            <th class="col-sev">度合</th>
+            <th class="col-cause">原因</th>
+            <th class="col-action">対策</th>
+            <th class="col-deadline">期限方針</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="col-risk-cell" data-label="リスク">Redis 障害時に決済 API 全体が落ちる</td>
+            <td data-label="度合"><span class="sev high">High</span></td>
+            <td data-label="原因">fail-open / fail-close の方針が未決</td>
+            <td data-label="対策">fail-open を初期方針とし、PoC で挙動を確認した上で SRE と合意する</td>
+            <td data-label="期限方針"><span class="deadline">2026-05-15</span></td>
+          </tr>
+          <tr>
+            <td class="col-risk-cell" data-label="リスク">しきい値が緩すぎて攻撃を素通しする / 厳しすぎて正常利用者を落とす</td>
+            <td data-label="度合"><span class="sev mid">Middle</span></td>
+            <td data-label="原因" class="empty"></td>
+            <td data-label="対策" class="empty"></td>
+            <td data-label="期限方針" class="empty"></td>
+          </tr>
+          <tr>
+            <td class="col-risk-cell" data-label="リスク">クライアント側が <code>429</code> を握りつぶし、ユーザー体験が悪化</td>
+            <td data-label="度合"><span class="sev mid">Middle</span></td>
+            <td data-label="原因">既存 SDK にリトライ実装が入っていないクライアントが存在</td>
+            <td data-label="対策">事前アナウンスと公式 SDK の <code>Retry-After</code> 対応パッチを同時リリース</td>
+            <td data-label="期限方針"><span class="deadline">2026-05-15</span></td>
+          </tr>
+          <tr>
+            <td class="col-risk-cell" data-label="リスク">k6 シナリオが現実のトラフィックを再現しきれない</td>
+            <td data-label="度合"><span class="sev low">Low</span></td>
+            <td data-label="原因">本番ログの分布をそのままシナリオ化していない</td>
+            <td data-label="対策">直近 30 日のリクエスト分布をベースにシナリオを生成し直す</td>
+            <td data-label="期限方針"><span class="deadline">随時</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+  </div>
+</body>
+</html>

@@ -1,0 +1,1058 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Components Reference — Supplementary</title>
+<style>
+  /* Design tokens — components-reference.html と同一体系。
+     :root が光モード、ダークは [data-theme="dark"] か
+     :root:has(#theme-toggle:checked) で上書き。 */
+  :root {
+    --bg:           #FFFFFF;
+    --surface:      #FFFFFF;
+    --surface-2:    #F7F7F7;
+    --surface-3:    #EFEFEF;
+    --text:         #141413;
+    --text-muted:   #6B6B66;
+    --text-subtle:  #9A9A93;
+    --border:       #E2E2DD;
+    --border-strong:#C9C9C2;
+    --accent:       #3B6EA5;
+    --accent-soft:  #E8EEF6;
+    --success:      #3F8A4E;
+    --success-soft: #E8F2EA;
+    --warning:      #B5821F;
+    --warning-soft: #FAF1DE;
+    --danger:       #B23A3A;
+    --danger-soft:  #F7E4E4;
+    --info:         #3B6EA5;
+    --info-soft:    #E8EEF6;
+    --shadow-sm:    0 1px 2px rgba(20,20,19,0.04);
+    --shadow-md:    0 4px 14px rgba(20,20,19,0.08);
+    --shadow-lg:    0 12px 32px rgba(20,20,19,0.14);
+
+    --serif: ui-serif, Georgia, serif;
+    --sans:  system-ui, -apple-system, sans-serif;
+    --mono:  ui-monospace, 'SF Mono', Menlo, monospace;
+    --radius-sm: 6px;
+    --radius:    10px;
+    --radius-lg: 14px;
+    --radius-pill: 999px;
+  }
+
+  [data-theme="dark"],
+  :root:has(#theme-toggle:checked) {
+    --bg:           #141413;
+    --surface:      #1C1C1B;
+    --surface-2:    #232322;
+    --surface-3:    #2B2B29;
+    --text:         #F2F2EE;
+    --text-muted:   #A8A8A0;
+    --text-subtle:  #6E6E68;
+    --border:       #2F2F2D;
+    --border-strong:#454541;
+    --accent:       #8AB0DA;
+    --accent-soft:  #1F2A38;
+    --success:      #7FB48A;
+    --success-soft: #1E2A21;
+    --warning:      #D9B266;
+    --warning-soft: #2E2616;
+    --danger:       #D77777;
+    --danger-soft:  #2E1C1C;
+    --info:         #8AB0DA;
+    --info-soft:    #1F2A38;
+    --shadow-sm:    0 1px 2px rgba(0,0,0,0.3);
+    --shadow-md:    0 4px 14px rgba(0,0,0,0.4);
+    --shadow-lg:    0 12px 32px rgba(0,0,0,0.5);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  .page {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 0 28px 96px;
+  }
+
+  /* HEADER + THEME TOGGLE */
+  header.page-head {
+    padding: 48px 0 16px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  header.page-head h1 {
+    font-family: var(--serif);
+    font-weight: 500;
+    font-size: 34px;
+    letter-spacing: -0.01em;
+    margin: 0 0 6px;
+  }
+  header.page-head p {
+    color: var(--text-muted);
+    font-size: 13px;
+    margin: 0;
+    max-width: 640px;
+  }
+  #theme-toggle { display: none; }
+  .theme-switch {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 14px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-pill);
+    background: var(--surface);
+    cursor: pointer;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text-muted);
+    user-select: none;
+  }
+  .theme-switch .dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--text);
+  }
+  [data-theme="dark"] .theme-switch .label-light,
+  :root:has(#theme-toggle:checked) .theme-switch .label-light { display: none; }
+  :root:not([data-theme="dark"]):not(:has(#theme-toggle:checked)) .theme-switch .label-dark { display: none; }
+
+  /* SECTION SCAFFOLD */
+  section {
+    padding: 36px 0 8px;
+    border-top: 1px solid var(--border);
+  }
+  section:first-of-type { border-top: none; }
+  .section-head { margin-bottom: 20px; }
+  .section-head h2 {
+    font-family: var(--serif);
+    font-weight: 500;
+    font-size: 22px;
+    margin: 0 0 4px;
+    letter-spacing: -0.005em;
+  }
+  .section-head p {
+    color: var(--text-muted);
+    font-size: 13px;
+    margin: 0;
+  }
+  .variant-label {
+    display: inline-flex;
+    align-items: center;
+    height: 22px;
+    padding: 0 9px;
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-muted);
+    background: var(--surface-2);
+    border-radius: var(--radius-pill);
+    margin-bottom: 10px;
+  }
+  .variant-note {
+    font-size: 12px;
+    color: var(--text-subtle);
+    margin-top: 10px;
+  }
+  .grid { display: grid; gap: 24px; }
+  .grid-2 { grid-template-columns: repeat(2, 1fr); }
+  .grid-3 { grid-template-columns: repeat(3, 1fr); }
+  .grid-4 { grid-template-columns: repeat(4, 1fr); }
+  @media (max-width: 960px) {
+    .grid-3, .grid-4 { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 640px) {
+    .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+  }
+  .row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+  }
+  .stack {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  code.inline {
+    font-family: var(--mono);
+    font-size: 12px;
+    padding: 1px 6px;
+    background: var(--surface-2);
+    border-radius: 4px;
+    color: var(--text);
+  }
+
+  /* SHARED MINI-COMPONENTS (Buttons, Badges, Avatar, Input) — —— components-reference.html と同じ定義 */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    height: 36px;
+    padding: 0 14px;
+    font-family: var(--sans);
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: var(--radius-sm);
+    border: 1px solid transparent;
+    cursor: pointer;
+    background: transparent;
+    color: var(--text);
+    line-height: 1;
+  }
+  .btn-sm { height: 28px; padding: 0 10px; font-size: 13px; }
+  .btn-primary { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+  [data-theme="dark"] .btn-primary,
+  :root:has(#theme-toggle:checked) .btn-primary { color: var(--surface); }
+  .btn-secondary { background: var(--surface); color: var(--text); border-color: var(--border-strong); }
+  .btn-ghost { background: transparent; color: var(--text); border-color: var(--border); }
+  .btn-ghost:hover { background: var(--surface-2); }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    height: 20px;
+    padding: 0 8px;
+    font-size: 11px;
+    font-weight: 500;
+    border-radius: var(--radius-pill);
+    background: var(--surface-2);
+    color: var(--text-muted);
+  }
+  .badge .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+    margin-right: 6px;
+  }
+  .badge-success { background: var(--success-soft); color: var(--success); }
+  .badge-warning { background: var(--warning-soft); color: var(--warning); }
+  .avatar {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: var(--surface-2);
+    color: var(--text-muted);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+  .input {
+    width: 100%;
+    height: 36px;
+    padding: 0 12px;
+    font-family: var(--sans);
+    font-size: 14px;
+    color: var(--text);
+    background: var(--surface);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-sm);
+    outline: none;
+  }
+  .input:focus { border-color: var(--accent); }
+  .input::placeholder { color: var(--text-subtle); }
+
+  /* 1) MODAL / DIALOG (静的表示) */
+  .modal-stage {
+    position: relative;
+    height: 280px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.35);
+  }
+  .modal {
+    position: absolute;
+    left: 50%; top: 50%;
+    transform: translate(-50%, -50%);
+    width: min(420px, calc(100% - 32px));
+    background: var(--surface);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-lg);
+    padding: 20px;
+  }
+  .modal-title {
+    font-family: var(--serif);
+    font-size: 18px;
+    font-weight: 500;
+    margin: 0 0 6px;
+  }
+  .modal-body {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin: 0 0 16px;
+  }
+  .modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+
+  /* 2) TOOLTIP / POPOVER */
+  .tip-row {
+    display: flex;
+    gap: 32px;
+    flex-wrap: wrap;
+    padding: 40px 16px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+  .tip-wrap {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .tip {
+    position: absolute;
+    padding: 6px 10px;
+    font-size: 12px;
+    background: var(--text);
+    color: var(--bg);
+    border-radius: 4px;
+    white-space: nowrap;
+  }
+  .tip::after {
+    content: "";
+    position: absolute;
+    width: 8px; height: 8px;
+    background: var(--text);
+    transform: rotate(45deg);
+  }
+  .tip-top {
+    bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%);
+  }
+  .tip-top::after { bottom: -3px; left: 50%; transform: translateX(-50%) rotate(45deg); }
+  .tip-bottom {
+    top: calc(100% + 8px); left: 50%; transform: translateX(-50%);
+  }
+  .tip-bottom::after { top: -3px; left: 50%; transform: translateX(-50%) rotate(45deg); }
+  .tip-right {
+    left: calc(100% + 8px); top: 50%; transform: translateY(-50%);
+  }
+  .tip-right::after { left: -3px; top: 50%; transform: translateY(-50%) rotate(45deg); }
+  .tip-left {
+    right: calc(100% + 8px); top: 50%; transform: translateY(-50%);
+  }
+  .tip-left::after { right: -3px; top: 50%; transform: translateY(-50%) rotate(45deg); }
+
+  .popover {
+    position: absolute;
+    bottom: calc(100% + 10px);
+    left: 50%;
+    transform: translateX(-50%);
+    width: 240px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-md);
+    padding: 12px 14px;
+    text-align: left;
+  }
+  .popover-title {
+    font-size: 13px;
+    font-weight: 600;
+    margin: 0 0 4px;
+  }
+  .popover-body {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin: 0;
+  }
+
+  /* 3) MENU / DROPDOWN PANEL */
+  .menu-stage {
+    position: relative;
+    min-height: 240px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+  }
+  .menu {
+    width: 220px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-md);
+    padding: 6px;
+  }
+  .menu-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    font-size: 13px;
+    color: var(--text);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+  }
+  .menu-item:hover { background: var(--surface-2); }
+  .menu-item.is-active { background: var(--accent-soft); color: var(--accent); }
+  .menu-item .shortcut {
+    margin-left: auto;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-subtle);
+  }
+  .menu-item.is-danger { color: var(--danger); }
+  .menu-divider {
+    height: 1px;
+    background: var(--border);
+    margin: 4px 2px;
+  }
+  .menu-label {
+    padding: 6px 10px 2px;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text-subtle);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  /* 4) TOAST / SNACKBAR */
+  .toast-stage {
+    position: relative;
+    min-height: 200px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+  }
+  .toast-stack {
+    position: absolute;
+    right: 16px; bottom: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 320px;
+    max-width: calc(100% - 32px);
+  }
+  .toast {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-md);
+    font-size: 13px;
+  }
+  .toast-icon {
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 1px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--bg);
+  }
+  .toast-success .toast-icon { background: var(--success); }
+  .toast-info .toast-icon    { background: var(--info); }
+  .toast-warning .toast-icon { background: var(--warning); }
+  .toast-danger .toast-icon  { background: var(--danger); }
+  .toast-body { flex: 1; }
+  .toast-body strong { display: block; margin-bottom: 2px; }
+  .toast-body .desc { color: var(--text-muted); font-size: 12px; }
+  .toast-close {
+    background: transparent;
+    border: none;
+    color: var(--text-subtle);
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1;
+    padding: 0 2px;
+  }
+
+  /* 5) PAGINATION */
+  .pagination {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .pagination .page {
+    min-width: 32px;
+    height: 32px;
+    padding: 0 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    cursor: pointer;
+  }
+  .pagination .page:hover { background: var(--surface-2); }
+  .pagination .page.is-active {
+    background: var(--accent);
+    color: var(--bg);
+    border-color: var(--accent);
+  }
+  [data-theme="dark"] .pagination .page.is-active,
+  :root:has(#theme-toggle:checked) .pagination .page.is-active { color: var(--surface); }
+  .pagination .page.is-disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+  .pagination .ellipsis {
+    padding: 0 6px;
+    color: var(--text-subtle);
+  }
+  .pagination-info {
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  /* 6) STEPPER / WIZARD */
+  .stepper {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    width: 100%;
+  }
+  .step {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+  .step .step-no {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 600;
+    background: var(--surface-2);
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+  }
+  .step .step-label {
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+  .step.is-done .step-no {
+    background: var(--accent);
+    color: var(--bg);
+    border-color: var(--accent);
+  }
+  [data-theme="dark"] .step.is-done .step-no,
+  :root:has(#theme-toggle:checked) .step.is-done .step-no { color: var(--surface); }
+  .step.is-active .step-no {
+    background: var(--surface);
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+  .step.is-active .step-label {
+    color: var(--text);
+    font-weight: 500;
+  }
+  .step-line {
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+    margin: 0 12px;
+  }
+  .step.is-done + .step-line {
+    background: var(--accent);
+  }
+
+  /* 7) STAT / METRIC CARD */
+  .stat {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+  }
+  .stat-label {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin: 0 0 6px;
+    font-family: var(--mono);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .stat-value {
+    font-family: var(--serif);
+    font-size: 30px;
+    font-weight: 500;
+    margin: 0;
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+    font-variant-numeric: tabular-nums;
+  }
+  .stat-delta {
+    margin-top: 6px;
+    font-size: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .stat-delta.up { color: var(--success); }
+  .stat-delta.down { color: var(--danger); }
+  .stat-delta.flat { color: var(--text-muted); }
+  .stat-spark {
+    margin-top: 10px;
+    height: 28px;
+    width: 100%;
+    background:
+      linear-gradient(to top, var(--accent-soft) 0%, transparent 100%);
+    border-radius: 4px;
+    position: relative;
+    overflow: hidden;
+  }
+  .stat-spark::before {
+    content: "";
+    position: absolute;
+    left: 0; right: 0; top: 60%;
+    height: 1.5px;
+    background: var(--accent);
+    /* fake sparkline shape via clip-path */
+    clip-path: polygon(0 50%, 14% 80%, 28% 30%, 42% 60%, 56% 20%, 70% 50%, 84% 10%, 100% 30%, 100% 100%, 0 100%);
+  }
+
+  /* 8) SPACING SCALE */
+  .scale-row {
+    display: grid;
+    grid-template-columns: 60px 1fr 80px;
+    align-items: center;
+    gap: 16px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .scale-row:last-child { border-bottom: none; }
+  .scale-row .name {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text);
+  }
+  .scale-row .value {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-subtle);
+    text-align: right;
+  }
+  .spacing-bar {
+    height: 16px;
+    background: var(--accent-soft);
+    border-radius: 2px;
+  }
+
+  /* 9) ELEVATION SCALE */
+  .elev-box {
+    height: 72px;
+    background: var(--surface);
+    border-radius: var(--radius);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+  .elev-none { border: 1px solid var(--border); }
+  .elev-sm   { box-shadow: var(--shadow-sm); }
+  .elev-md   { box-shadow: var(--shadow-md); }
+  .elev-lg   { box-shadow: var(--shadow-lg); }
+  .elev-stage {
+    padding: 24px;
+    background: var(--surface-2);
+    border-radius: var(--radius);
+  }
+
+  /* 10) RADIUS SCALE */
+  .radius-box {
+    height: 72px;
+    background: var(--accent-soft);
+    border: 1px solid var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--accent);
+  }
+  .radius-0    { border-radius: 0; }
+  .radius-sm-b { border-radius: var(--radius-sm); }
+  .radius-md-b { border-radius: var(--radius); }
+  .radius-lg-b { border-radius: var(--radius-lg); }
+  .radius-full { border-radius: var(--radius-pill); }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HEADER -->
+  <header class="page-head">
+    <div>
+      <h1>Components reference — supplementary</h1>
+      <p>Overlay, data-display, and scale tokens. Companion to <code class="inline">components-reference.html</code>; same token system and decoration discipline.</p>
+    </div>
+    <label class="theme-switch" for="theme-toggle">
+      <input type="checkbox" id="theme-toggle">
+      <span class="dot"></span>
+      <span class="label-light">Light → Dark</span>
+      <span class="label-dark">Dark → Light</span>
+    </label>
+  </header>
+
+  <!-- GROUP 1 / OVERLAYS -->
+
+  <!-- Modal / Dialog -->
+  <section>
+    <div class="section-head">
+      <h2>Modal / Dialog</h2>
+      <p>Centred overlay with backdrop. Shown in an open state — the surrounding stage is for visual context only.</p>
+    </div>
+    <div class="modal-stage">
+      <div class="modal-backdrop"></div>
+      <div class="modal">
+        <h3 class="modal-title">Delete project?</h3>
+        <p class="modal-body">This will permanently remove "Atlas migration" and all of its tasks. This cannot be undone.</p>
+        <div class="modal-actions">
+          <button class="btn btn-ghost btn-sm">Cancel</button>
+          <button class="btn btn-primary btn-sm">Delete</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Tooltip / Popover -->
+  <section>
+    <div class="section-head">
+      <h2>Tooltip / Popover</h2>
+      <p>Tooltips are short text on a solid surface; popovers carry richer content.</p>
+    </div>
+
+    <span class="variant-label">Tooltips / four positions</span>
+    <div class="tip-row">
+      <div class="tip-wrap">
+        <button class="btn btn-secondary btn-sm">Top</button>
+        <span class="tip tip-top">Hint goes here</span>
+      </div>
+      <div class="tip-wrap">
+        <button class="btn btn-secondary btn-sm">Right</button>
+        <span class="tip tip-right">Hint goes here</span>
+      </div>
+      <div class="tip-wrap">
+        <button class="btn btn-secondary btn-sm">Bottom</button>
+        <span class="tip tip-bottom">Hint goes here</span>
+      </div>
+      <div class="tip-wrap">
+        <button class="btn btn-secondary btn-sm">Left</button>
+        <span class="tip tip-left">Hint goes here</span>
+      </div>
+    </div>
+
+    <div style="margin-top:20px">
+      <span class="variant-label">Popover</span>
+      <div class="tip-row" style="padding-top:80px">
+        <div class="tip-wrap">
+          <button class="btn btn-secondary btn-sm">Profile</button>
+          <div class="popover">
+            <p class="popover-title">Jane Doe</p>
+            <p class="popover-body">Signed in as jane@birchline.dev. Last active 2 minutes ago.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Menu / Dropdown -->
+  <section>
+    <div class="section-head">
+      <h2>Menu / Dropdown panel</h2>
+      <p>Selectable list anchored to a trigger. Use sections, dividers, and shortcuts where helpful.</p>
+    </div>
+    <div class="grid grid-2">
+      <div>
+        <span class="variant-label">Simple menu</span>
+        <div class="menu-stage">
+          <div class="menu">
+            <div class="menu-item is-active">Overview</div>
+            <div class="menu-item">Activity</div>
+            <div class="menu-item">Settings</div>
+            <div class="menu-divider"></div>
+            <div class="menu-item is-danger">Delete project</div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <span class="variant-label">Sectioned / with shortcuts</span>
+        <div class="menu-stage">
+          <div class="menu">
+            <div class="menu-label">Account</div>
+            <div class="menu-item">Profile <span class="shortcut">⌘P</span></div>
+            <div class="menu-item">Preferences <span class="shortcut">⌘,</span></div>
+            <div class="menu-divider"></div>
+            <div class="menu-label">Workspace</div>
+            <div class="menu-item">Invite members</div>
+            <div class="menu-item">Billing</div>
+            <div class="menu-divider"></div>
+            <div class="menu-item">Sign out <span class="shortcut">⇧⌘Q</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Toast / Snackbar -->
+  <section>
+    <div class="section-head">
+      <h2>Toast / Snackbar</h2>
+      <p>Transient feedback floating at a screen corner. Stack multiple if needed; older toasts dismiss first.</p>
+    </div>
+    <div class="toast-stage">
+      <div class="toast-stack">
+        <div class="toast toast-success">
+          <span class="toast-icon">✓</span>
+          <div class="toast-body">
+            <strong>Saved.</strong>
+            <span class="desc">Your changes have been published.</span>
+          </div>
+          <button class="toast-close" aria-label="Dismiss">×</button>
+        </div>
+        <div class="toast toast-info">
+          <span class="toast-icon">i</span>
+          <div class="toast-body">
+            <strong>New version available.</strong>
+            <span class="desc">Refresh to load v0.4.3.</span>
+          </div>
+          <button class="toast-close" aria-label="Dismiss">×</button>
+        </div>
+        <div class="toast toast-warning">
+          <span class="toast-icon">!</span>
+          <div class="toast-body">
+            <strong>Approaching limit.</strong>
+            <span class="desc">82% of monthly quota used.</span>
+          </div>
+          <button class="toast-close" aria-label="Dismiss">×</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- GROUP 2 / DATA DISPLAY -->
+
+  <!-- Pagination -->
+  <section>
+    <div class="section-head">
+      <h2>Pagination</h2>
+      <p>Page-by-page navigation for tables and lists. Use ellipsis to truncate long ranges.</p>
+    </div>
+
+    <div class="stack">
+      <div>
+        <span class="variant-label">Numeric / with ellipsis</span>
+        <div class="row" style="justify-content:space-between">
+          <div class="pagination">
+            <span class="page is-disabled">‹</span>
+            <span class="page">1</span>
+            <span class="page is-active">2</span>
+            <span class="page">3</span>
+            <span class="page">4</span>
+            <span class="ellipsis">…</span>
+            <span class="page">12</span>
+            <span class="page">›</span>
+          </div>
+          <span class="pagination-info">Showing 11–20 of 118</span>
+        </div>
+      </div>
+
+      <div>
+        <span class="variant-label">Compact / prev/next</span>
+        <div class="pagination">
+          <span class="page">‹ Previous</span>
+          <span class="page">Next ›</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Stepper / Wizard -->
+  <section>
+    <div class="section-head">
+      <h2>Stepper / Wizard progress</h2>
+      <p>Linear multi-step flows. Distinguish done, active, and upcoming states.</p>
+    </div>
+
+    <div class="stack" style="gap:28px">
+      <div>
+        <span class="variant-label">Horizontal stepper</span>
+        <div class="stepper">
+          <div class="step is-done"><span class="step-no">✓</span><span class="step-label">Account</span></div>
+          <div class="step-line"></div>
+          <div class="step is-done"><span class="step-no">✓</span><span class="step-label">Workspace</span></div>
+          <div class="step-line"></div>
+          <div class="step is-active"><span class="step-no">3</span><span class="step-label">Invite team</span></div>
+          <div class="step-line"></div>
+          <div class="step"><span class="step-no">4</span><span class="step-label">Billing</span></div>
+          <div class="step-line"></div>
+          <div class="step"><span class="step-no">5</span><span class="step-label">Review</span></div>
+        </div>
+      </div>
+
+      <div>
+        <span class="variant-label">Compact / numbered only</span>
+        <div class="stepper">
+          <div class="step is-done"><span class="step-no">✓</span></div>
+          <div class="step-line"></div>
+          <div class="step is-active"><span class="step-no">2</span></div>
+          <div class="step-line"></div>
+          <div class="step"><span class="step-no">3</span></div>
+          <div class="step-line"></div>
+          <div class="step"><span class="step-no">4</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Stat / Metric card -->
+  <section>
+    <div class="section-head">
+      <h2>Stat / Metric card</h2>
+      <p>Dashboard-style number tiles. Pair with a small delta and an optional sparkline.</p>
+    </div>
+    <div class="grid grid-4">
+      <div class="stat">
+        <p class="stat-label">Active users</p>
+        <p class="stat-value">12,480</p>
+        <span class="stat-delta up">▲ 8.2% vs last week</span>
+      </div>
+      <div class="stat">
+        <p class="stat-label">Revenue</p>
+        <p class="stat-value">$48.2k</p>
+        <span class="stat-delta up">▲ 2.4%</span>
+        <div class="stat-spark"></div>
+      </div>
+      <div class="stat">
+        <p class="stat-label">Churn</p>
+        <p class="stat-value">3.1%</p>
+        <span class="stat-delta down">▼ 0.6%</span>
+      </div>
+      <div class="stat">
+        <p class="stat-label">Avg. session</p>
+        <p class="stat-value">4m 12s</p>
+        <span class="stat-delta flat">— no change</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- GROUP 3 / TOKEN SCALES -->
+
+  <!-- Spacing scale -->
+  <section>
+    <div class="section-head">
+      <h2>Spacing scale</h2>
+      <p>Base unit is 4px. Use these tokens for padding, gap, and margin — never raw pixel values in components.</p>
+    </div>
+    <div>
+      <div class="scale-row">
+        <span class="name">space-1</span>
+        <div class="spacing-bar" style="width:4px"></div>
+        <span class="value">4px</span>
+      </div>
+      <div class="scale-row">
+        <span class="name">space-2</span>
+        <div class="spacing-bar" style="width:8px"></div>
+        <span class="value">8px</span>
+      </div>
+      <div class="scale-row">
+        <span class="name">space-3</span>
+        <div class="spacing-bar" style="width:12px"></div>
+        <span class="value">12px</span>
+      </div>
+      <div class="scale-row">
+        <span class="name">space-4</span>
+        <div class="spacing-bar" style="width:16px"></div>
+        <span class="value">16px</span>
+      </div>
+      <div class="scale-row">
+        <span class="name">space-6</span>
+        <div class="spacing-bar" style="width:24px"></div>
+        <span class="value">24px</span>
+      </div>
+      <div class="scale-row">
+        <span class="name">space-8</span>
+        <div class="spacing-bar" style="width:32px"></div>
+        <span class="value">32px</span>
+      </div>
+      <div class="scale-row">
+        <span class="name">space-12</span>
+        <div class="spacing-bar" style="width:48px"></div>
+        <span class="value">48px</span>
+      </div>
+      <div class="scale-row">
+        <span class="name">space-16</span>
+        <div class="spacing-bar" style="width:64px"></div>
+        <span class="value">64px</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Elevation scale -->
+  <section>
+    <div class="section-head">
+      <h2>Elevation scale</h2>
+      <p>Four levels: none, sm, md, lg. Use sparingly; flat surfaces with borders are the default.</p>
+    </div>
+    <div class="elev-stage">
+      <div class="grid grid-4">
+        <div class="elev-box elev-none">none</div>
+        <div class="elev-box elev-sm">--shadow-sm</div>
+        <div class="elev-box elev-md">--shadow-md</div>
+        <div class="elev-box elev-lg">--shadow-lg</div>
+      </div>
+    </div>
+    <p class="variant-note">none: borders only / sm: hover/raised / md: cards/menus / lg: modals</p>
+  </section>
+
+  <!-- Radius scale -->
+  <section>
+    <div class="section-head">
+      <h2>Radius scale</h2>
+      <p>Five steps from sharp to fully round. Use pill only for badges, switches, and avatars.</p>
+    </div>
+    <div class="grid grid-4">
+      <div class="radius-box radius-0">0</div>
+      <div class="radius-box radius-sm-b">--radius-sm / 6px</div>
+      <div class="radius-box radius-md-b">--radius / 10px</div>
+      <div class="radius-box radius-lg-b">--radius-lg / 14px</div>
+    </div>
+    <div class="grid grid-2" style="margin-top:16px">
+      <div class="radius-box radius-full">--radius-pill / 999px</div>
+      <div></div>
+    </div>
+  </section>
+
+</div>
+</body>
+</html>

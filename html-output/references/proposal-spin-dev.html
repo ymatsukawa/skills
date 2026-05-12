@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>開発事業部内 · CI/CD 改善投資の提案</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+JP:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+/* ==================================================================
+   Design Tokens
+   ================================================================== */
+:root {
+  --white:     #FFFFFF;
+  --ink:       #111111;
+  --ink-2:     #3A3A3A;
+  --ink-3:     #6B6B6B;
+  --rule:      #E5E5E5;
+  --rule-2:    #D0D0D0;
+  --tint:      #F7F7F5;
+
+  --clay:      #C75A38;
+  --olive:     #5F7A3F;
+  --rust:      #8E2F22;
+  --burnt:     #B85C00;      /* After — bright burnt orange (CVD-safe pair with navy) */
+  --navy:      #2A4A6B;      /* Before — dark navy blue (CVD-safe pair with burnt) */
+
+  --font-sans: "Inter", "Noto Sans JP", system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  --maxw: 880px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  font-family: var(--font-sans);
+  background: var(--white);
+  color: var(--ink-2);
+  font-size: 15px;
+  line-height: 1.65;
+  font-weight: 400;
+  font-feature-settings: "kern", "liga", "calt";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  padding: 64px 32px 120px;
+}
+
+.page { max-width: var(--maxw); margin: 0 auto; }
+
+/* ------------------------------------------------------------------
+   Page header
+   ------------------------------------------------------------------ */
+h1.doc-title {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 36px;
+  line-height: 1.2;
+  color: var(--ink);
+  letter-spacing: -0.015em;
+  margin-bottom: 24px;
+  max-width: 720px;
+}
+
+/* doc-lead — Executive summary: 4 vertically-flowing blocks
+   (状況 → 問題点 → 将来の発生コスト → 解決道筋) so the reader
+   can grasp the narrative arc in one top-to-bottom scan. */
+.doc-lead {
+  margin-bottom: 56px;
+  border: 1.5px solid var(--ink);
+  border-radius: 6px;
+  background: var(--white);
+  overflow: hidden;
+}
+
+.lead-block {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: 22px;
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--rule);
+}
+.lead-block:last-child { border-bottom: none; }
+@media (max-width: 720px) {
+  .lead-block { grid-template-columns: 1fr; gap: 6px; padding: 16px 20px; }
+}
+
+.lead-label {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: -0.005em;
+  padding-top: 4px;
+  align-self: start;
+}
+.lead-text {
+  list-style: none;
+  font-size: 14.5px;
+  color: var(--ink);
+  line-height: 1.7;
+  font-weight: 400;
+}
+.lead-text li {
+  position: relative;
+  padding: 3px 0 3px 18px;
+  font-size: 14.5px;
+  color: var(--ink);
+  line-height: 1.6;
+}
+.lead-text li::before {
+  content: "";
+  position: absolute;
+  left: 2px;
+  top: 11px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ink);
+}
+.lead-text li strong { font-weight: 700; }
+
+/* ------------------------------------------------------------------
+   Section chrome
+   ------------------------------------------------------------------ */
+section.spin-section { margin-bottom: 64px; scroll-margin-top: 24px; }
+
+h2.spin-title {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 26px;
+  color: var(--ink);
+  letter-spacing: -0.015em;
+  margin: 0 0 10px;
+}
+.spin-intro {
+  font-size: 14.5px;
+  color: var(--ink);
+  max-width: 680px;
+  margin-bottom: 24px;
+}
+hr.section-rule {
+  border: none;
+  border-top: 1px solid var(--rule);
+  margin: 0 0 24px;
+}
+
+/* ------------------------------------------------------------------
+   In-section h3
+   ------------------------------------------------------------------ */
+h3.subhead {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 17px;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+  margin: 8px 0 14px;
+}
+
+/* ------------------------------------------------------------------
+   Summary band
+   ------------------------------------------------------------------ */
+.summary {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  margin-bottom: 32px;
+  overflow: hidden;
+}
+@media (max-width: 720px) { .summary { grid-template-columns: repeat(2, 1fr); } }
+.stat {
+  padding: 22px 22px 20px;
+  border-right: 1px solid var(--rule);
+  display: flex;
+  flex-direction: column;
+}
+.stat:last-child { border-right: none; }
+@media (max-width: 720px) {
+  .stat:nth-child(2n) { border-right: none; }
+  .stat:nth-child(-n+2) { border-bottom: 1px solid var(--rule); }
+}
+.stat-label {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+  letter-spacing: -0.005em;
+  margin-bottom: 4px;
+  line-height: 1.4;
+}
+.stat-note {
+  font-family: var(--font-sans);
+  font-size: 12.5px;
+  color: var(--ink-3);
+  margin-bottom: 14px;
+  line-height: 1.4;
+}
+.stat-note.warn { color: var(--clay); }
+.stat-num {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 30px;
+  line-height: 1;
+  color: var(--ink);
+  letter-spacing: -0.02em;
+  margin-top: auto;
+}
+.stat-num .unit { font-size: 16px; font-weight: 500; color: var(--ink-2); margin-left: 2px; }
+
+/* ------------------------------------------------------------------
+   Fact list
+   ------------------------------------------------------------------ */
+ul.fact-list { list-style: none; }
+.fact-list li {
+  display: grid;
+  grid-template-columns: 24px 1fr;
+  gap: 14px;
+  padding: 20px 0;
+  border-bottom: 1px solid var(--rule);
+}
+.fact-list li:last-child { border-bottom: none; }
+.fact-marker {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--ink-3);
+  letter-spacing: 0.04em;
+  padding-top: 3px;
+}
+.fact-claim {
+  font-size: 15.5px;
+  color: var(--ink);
+  line-height: 1.6;
+  font-weight: 400;
+  margin-bottom: 10px;
+}
+.fact-claim strong { font-weight: 700; }
+
+.fact-source {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 3px;
+  border: 1px solid var(--ink-3);
+  color: var(--ink-3);
+  margin-bottom: 10px;
+}
+
+.fact-rationale {
+  font-size: 13.5px;
+  color: var(--ink);
+  line-height: 1.65;
+  font-weight: 400;
+}
+
+/* ------------------------------------------------------------------
+   Problem table
+   ------------------------------------------------------------------ */
+.problem-table {
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.problem-table .row {
+  display: grid;
+  grid-template-columns: 1.6fr 110px 1.6fr;
+}
+@media (max-width: 720px) { .problem-table .row { grid-template-columns: 1fr; } }
+.problem-table .row + .row { border-top: 1px solid var(--rule); }
+.problem-table .cell { padding: 14px 18px; font-size: 13.5px; line-height: 1.55; color: var(--ink-2); }
+.problem-table .cell + .cell { border-left: 1px solid var(--rule); }
+@media (max-width: 720px) {
+  .problem-table .cell + .cell { border-left: none; border-top: 1px dashed var(--rule); }
+}
+.problem-table .head .cell {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  background: var(--tint);
+  font-weight: 500;
+}
+.sev {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  padding: 3px 8px;
+  border-radius: 3px;
+  border: 1px solid currentColor;
+}
+.sev.high { color: var(--rust); }
+.sev.med  { color: var(--clay); }
+.sev.low  { color: var(--olive); }
+
+/* ------------------------------------------------------------------
+   Cause-chain diagram
+   ------------------------------------------------------------------ */
+.diagram-frame {
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  padding: 32px 28px 24px;
+  overflow-x: auto;
+  background: var(--white);
+}
+.diagram-frame svg { display: block; width: 100%; height: auto; min-width: 720px; }
+.diagram-caption {
+  font-size: 13px;
+  color: var(--ink);
+  margin-top: 16px;
+  line-height: 1.6;
+}
+
+/* ------------------------------------------------------------------
+   Before / After — horizontal bar comparison
+   ------------------------------------------------------------------ */
+.compare-axis {
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  padding: 22px 24px 24px;
+  margin-bottom: 22px;
+}
+
+.ca-row {
+  display: grid;
+  grid-template-columns: 96px 1fr;
+  align-items: center;
+  gap: 18px;
+  padding: 14px 0;
+}
+.ca-row + .ca-row { border-top: 1px solid var(--rule); }
+
+.ca-label {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  align-self: center;
+}
+.ca-row.after .ca-label { color: var(--burnt); font-weight: 600; }
+
+.ca-bar-wrap {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 14px;
+}
+.ca-bar {
+  height: 18px;
+  background: var(--tint);
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  position: relative;
+  overflow: hidden;
+}
+.ca-bar-fill {
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  background: var(--navy);
+  border-radius: 2px 0 0 2px;
+}
+.ca-row.after .ca-bar-fill { background: var(--burnt); }
+
+.ca-value {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 26px;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--navy);
+  white-space: nowrap;
+}
+.ca-row.after .ca-value {
+  font-size: 32px;
+  color: var(--burnt);
+  letter-spacing: -0.025em;
+}
+.ca-value .unit {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--navy);
+  margin-left: 2px;
+}
+.ca-row.after .ca-value .unit {
+  font-size: 16px;
+  color: var(--burnt);
+}
+
+.ca-delta {
+  margin-top: 10px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--rule);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: var(--clay);
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.ca-delta .label {
+  color: var(--ink-3);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 12px;
+}
+.ca-delta .v { color: var(--clay); font-weight: 600; }
+.ca-delta .note { color: var(--ink); }
+
+@media (max-width: 720px) {
+  .ca-row { grid-template-columns: 1fr; gap: 8px; }
+  .ca-label { font-size: 12px; }
+}
+
+/* ------------------------------------------------------------------
+   Question callout
+   ------------------------------------------------------------------ */
+.payoff-callout {
+  border-left: 3px solid var(--clay);
+  padding: 20px 24px;
+  background: var(--tint);
+  border-radius: 0 6px 6px 0;
+}
+h3.payoff-q-head {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 17px;
+  color: var(--clay);
+  letter-spacing: -0.005em;
+  margin-bottom: 10px;
+}
+.payoff-callout p {
+  font-size: 15.5px;
+  color: var(--ink);
+  line-height: 1.7;
+}
+
+/* ------------------------------------------------------------------
+   Next actions
+   ------------------------------------------------------------------ */
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.action {
+  border: 1px solid var(--rule);
+  border-left: 3px solid var(--clay);
+  border-radius: 0 6px 6px 0;
+  padding: 18px 22px;
+}
+.action .at { font-weight: 600; font-size: 15.5px; color: var(--ink); margin-bottom: 6px; }
+.action .ad { font-size: 13.5px; color: var(--ink); line-height: 1.6; margin-bottom: 10px; }
+.action .ao {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 4px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--ink-3);
+  letter-spacing: 0.02em;
+  border-top: 1px solid var(--rule);
+  padding-top: 10px;
+}
+.action .ao .row {
+  display: grid;
+  grid-template-columns: 80px 1fr;
+  gap: 8px;
+}
+.action .ao .k {
+  color: var(--ink);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 12px;
+  padding-top: 1px;
+}
+.action .ao .v { color: var(--ink-2); }
+
+/* ------------------------------------------------------------------
+   Inline code
+   ------------------------------------------------------------------ */
+code {
+  font-family: var(--font-mono);
+  font-size: 0.88em;
+  background: var(--tint);
+  padding: 1px 5px;
+  border-radius: 3px;
+  color: var(--ink);
+}
+
+/* ==================================================================
+   PRINT
+   ================================================================== */
+@media print {
+  @page { size: A4; margin: 16mm 14mm; }
+  body { padding: 0; font-size: 10.5pt; line-height: 1.5; color: #000; background: #fff; }
+  .page { max-width: none; }
+  h1.doc-title { font-size: 22pt; }
+  h2.spin-title { font-size: 15pt; }
+  h3.subhead, h3.payoff-q-head { font-size: 12pt; }
+  section.spin-section { page-break-inside: avoid; break-inside: avoid; margin-bottom: 28px; }
+  .summary, .compare-axis, .diagram-frame, .problem-table, .action { page-break-inside: avoid; break-inside: avoid; }
+  h1, h2, h3 { page-break-after: avoid; break-after: avoid; }
+  .payoff-callout, .problem-table .head .cell, code { background: transparent !important; }
+  /* Before/After: モノクロ印刷では Before を枠線のみ、After を黒塗りで判別 */
+  .ca-bar { background: transparent; }
+  .ca-bar-fill { background: transparent !important; border: 1.5px solid #000; box-sizing: border-box; }
+  .ca-row.after .ca-bar-fill { background: #000 !important; border-color: #000; }
+  .ca-value, .ca-row.after .ca-value, .ca-value .unit, .ca-row.after .ca-value .unit,
+  .ca-row.after .ca-label, .ca-delta .v, h3.payoff-q-head { color: #000; }
+  .action { border-left-color: #000; }
+  .payoff-callout { border-left-color: #000; }
+  .stat-note.warn { color: #000; }
+  .doc-lead { border-color: #000; }
+  a { color: #000; text-decoration: none; }
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- =============================================================
+       Page header
+       ============================================================= -->
+  <header>
+    <h1 class="doc-title">開発事業部内 · CI/CD パイプライン再構築の投資提案</h1>
+    <div class="doc-lead" aria-label="本提案の要約">
+      <div class="lead-block">
+        <div class="lead-label">状況</div>
+        <ul class="lead-text">
+          <li>Atlas の CI 実行時間が 1 年で <strong>2.3 倍</strong>に肥大化</li>
+          <li>PR マージリードタイム中央値は <strong>2.4 日</strong></li>
+          <li>CI 月次費用は <strong>¥2.4M</strong> に到達</li>
+        </ul>
+      </div>
+      <div class="lead-block">
+        <div class="lead-label">問題点</div>
+        <ul class="lead-text">
+          <li>E2E スイートの肥大化と flaky テストの放置</li>
+          <li>preview 環境が毎回フル再作成で重い</li>
+          <li>開発者のフォーカス時間と CI への信頼が同時に劣化</li>
+        </ul>
+      </div>
+      <div class="lead-block">
+        <div class="lead-label">将来の発生コスト</div>
+        <ul class="lead-text">
+          <li>年度末に <strong>+¥600K / 月</strong>のコスト超過の見込み</li>
+          <li>部門 KPI(リードタイム / 障害率)双方の悪化</li>
+          <li>並列化の延長線では解けない構造的な行き詰まり</li>
+        </ul>
+      </div>
+      <div class="lead-block">
+        <div class="lead-label">解決道筋</div>
+        <ul class="lead-text">
+          <li><strong>エンジニア 2 名 × 4 か月</strong>で CI/CD を再構築</li>
+          <li>リードタイムを <strong>0.6 日</strong>、CI 費用を <strong>¥1.3M / 月</strong> に圧縮</li>
+          <li>投資回収は約 6 か月の見込み</li>
+        </ul>
+      </div>
+    </div>
+  </header>
+
+  <!-- =============================================================
+       01 — 現状
+       ============================================================= -->
+  <section class="spin-section" id="situation">
+    <h2 class="spin-title">現状</h2>
+    <p class="spin-intro">
+      開発事業部の主力プロダクト Atlas における、CI/CD パイプラインの足元の数値と運用実態。
+      解釈や評価は次節以降で扱う。
+    </p>
+    <hr class="section-rule">
+
+    <h3 class="subhead">主要指標</h3>
+    <div class="summary" aria-label="主要指標">
+      <div class="stat">
+        <div class="stat-label">開発体制</div>
+        <div class="stat-note">3 チーム合計</div>
+        <div class="stat-num">18<span class="unit">名</span></div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">週次 PR 数</div>
+        <div class="stat-note">直近 8 週間平均</div>
+        <div class="stat-num">~62<span class="unit">本</span></div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">CI 1 回の平均実行時間</div>
+        <div class="stat-note warn">1 年前比 +130%</div>
+        <div class="stat-num">38<span class="unit">分</span></div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">CI 月次費用</div>
+        <div class="stat-note warn">前年同月 +¥0.7M</div>
+        <div class="stat-num">¥2.4<span class="unit">M</span></div>
+      </div>
+    </div>
+
+    <h3 class="subhead">事実の積み上げ</h3>
+    <ul class="fact-list">
+      <li>
+        <span class="fact-marker">01</span>
+        <div>
+          <p class="fact-claim">PR の <strong>マージリードタイム中央値は 2.4 日</strong>。1 年前(0.9 日)と比べて 2.7 倍に伸びている。</p>
+          <span class="fact-source">github metrics 2026-Q1</span>
+          <p class="fact-rationale">
+            主因は CI 完走待ちと、レビュー後の <code>main</code> リベース・再 CI の繰り返し。
+            個別レビュアーの応答速度は同期間でほぼ横ばい。
+          </p>
+        </div>
+      </li>
+      <li>
+        <span class="fact-marker">02</span>
+        <div>
+          <p class="fact-claim">CI ジョブの <strong>約 62% の時間が E2E スイート 1 本</strong>(<code>tests/e2e/full-suite</code>)に集中している。</p>
+          <span class="fact-source">CI レポート集計</span>
+          <p class="fact-rationale">
+            このスイートは 4 並列で実行されているが、テストデータのシードがシリアル依存で
+            これ以上は分割できない。フィクスチャの整理から再設計が必要。
+          </p>
+        </div>
+      </li>
+      <li>
+        <span class="fact-marker">03</span>
+        <div>
+          <p class="fact-claim">ステージング相当の <strong>preview 環境立ち上げに毎回 12〜18 分</strong>を要している。</p>
+          <span class="fact-source">deploy log 2026-04</span>
+          <p class="fact-rationale">
+            Helm chart が単一の巨大 release になっており、変更の有無に関わらず全リソースを再作成している。
+            キャッシュやイメージ層の再利用が効いていない。
+          </p>
+        </div>
+      </li>
+      <li>
+        <span class="fact-marker">04</span>
+        <div>
+          <p class="fact-claim">flaky テストによる CI 再実行が <strong>週あたり平均 9 件</strong> 発生している。</p>
+          <span class="fact-source">CI 再実行ログ</span>
+          <p class="fact-rationale">
+            原因の上位は外部 API のレートリミットと、テストごとの状態の取り違え。
+            一時的な隔離はしているものの、根本対処は後回しになっている。
+          </p>
+        </div>
+      </li>
+      <li>
+        <span class="fact-marker">05</span>
+        <div>
+          <p class="fact-claim">CI ランナーの <strong>月次費用は ¥2.4M</strong>。前年同月から +¥0.7M 増加している。</p>
+          <span class="fact-source">クラウド請求</span>
+          <p class="fact-rationale">
+            実行時間の増加に比例しており、現状のままだと年度末には ¥3M / 月 規模に到達する見込み。
+          </p>
+        </div>
+      </li>
+    </ul>
+  </section>
+
+  <!-- =============================================================
+       02 — 問題
+       ============================================================= -->
+  <section class="spin-section" id="problem">
+    <h2 class="spin-title">問題</h2>
+    <p class="spin-intro">
+      現状の数値が、開発組織にどのような痛みとして表れているか。深刻度と影響範囲を併記する。
+    </p>
+    <hr class="section-rule">
+
+    <div class="problem-table">
+      <div class="row head">
+        <div class="cell">問題</div>
+        <div class="cell">深刻度</div>
+        <div class="cell">現状の影響</div>
+      </div>
+      <div class="row">
+        <div class="cell">
+          PR がマージされるまでに 2〜3 日かかり、レビュー中の文脈が失われ、再確認のコストが
+          雪だるま式に増えている。
+        </div>
+        <div class="cell"><span class="sev high">HIGH</span></div>
+        <div class="cell">
+          開発者 1 人あたり週 <code>~4 時間</code>がコンテキストスイッチに消えている試算。
+        </div>
+      </div>
+      <div class="row">
+        <div class="cell">
+          CI 完走待ちで他作業に切り替えるため、1 日あたりの実装着手回数が減り、
+          フォーカス時間の確保が困難になっている。
+        </div>
+        <div class="cell"><span class="sev high">HIGH</span></div>
+        <div class="cell">
+          直近の 1on1 で 3 チーム合計 8 名から同主旨の改善要望が出ている。
+        </div>
+      </div>
+      <div class="row">
+        <div class="cell">
+          flaky テストによる無意味な再実行が、CI コストとレビュアーの信頼の両方を削っている。
+        </div>
+        <div class="cell"><span class="sev med">MED</span></div>
+        <div class="cell">
+          「赤くても気にしない」運用が常態化しつつあり、本物の失敗を見落とすリスクが上昇。
+        </div>
+      </div>
+      <div class="row">
+        <div class="cell">
+          CI 費用が線形に増加しており、来期の予算で吸収できない見込み。
+        </div>
+        <div class="cell"><span class="sev med">MED</span></div>
+        <div class="cell">
+          現状の傾きが続くと、年度末で +¥600K / 月 の超過が発生する。
+        </div>
+      </div>
+      <div class="row">
+        <div class="cell">
+          preview 環境の立ち上げが遅く、デザイン・QA レビューが「次の朝待ち」になりがち。
+        </div>
+        <div class="cell"><span class="sev low">LOW</span></div>
+        <div class="cell">
+          直接の数値影響は小さいが、デザイナー側の待機時間として可視化されつつある。
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       03 — 影響
+       ============================================================= -->
+  <section class="spin-section" id="implication">
+    <h2 class="spin-title">影響</h2>
+    <p class="spin-intro">
+      問題が単発で止まらず、開発組織にどう波及するかを図示する。
+      矢印は、未対応のままさらに 2 四半期続いた場合の連鎖を示す。
+    </p>
+    <hr class="section-rule">
+
+    <div class="diagram-frame">
+      <svg viewBox="0 0 860 400" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="問題の連鎖図">
+        <defs>
+          <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="#6B6B6B"/>
+          </marker>
+          <marker id="arrC" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="#C75A38"/>
+          </marker>
+        </defs>
+
+        <!-- ROW 1: Root causes -->
+        <g font-family="Inter, sans-serif" fill="#111">
+          <rect x="20"  y="20" width="240" height="72" rx="4" fill="#FFFFFF" stroke="#D0D0D0" stroke-width="1.25"/>
+          <text x="140" y="52" text-anchor="middle" font-weight="600" font-size="16">並列化の限界</text>
+          <text x="140" y="74" text-anchor="middle" fill="#6B6B6B" font-size="15">シード依存 / 4並列で頭打ち</text>
+
+          <rect x="310" y="20" width="240" height="72" rx="4" fill="#FFFFFF" stroke="#D0D0D0" stroke-width="1.25"/>
+          <text x="430" y="52" text-anchor="middle" font-weight="600" font-size="16">flaky の放置</text>
+          <text x="430" y="74" text-anchor="middle" fill="#6B6B6B" font-size="15">週 9 件の再実行が常態化</text>
+
+          <rect x="600" y="20" width="240" height="72" rx="4" fill="#FFFFFF" stroke="#D0D0D0" stroke-width="1.25"/>
+          <text x="720" y="52" text-anchor="middle" font-weight="600" font-size="16">preview 環境の重さ</text>
+          <text x="720" y="74" text-anchor="middle" fill="#6B6B6B" font-size="15">毎回フル再作成</text>
+        </g>
+
+        <!-- ROW 2: Intermediate effects -->
+        <g font-family="Inter, sans-serif" fill="#111">
+          <rect x="20"  y="170" width="240" height="72" rx="4" fill="#F7F7F5" stroke="#D0D0D0" stroke-width="1.25"/>
+          <text x="140" y="202" text-anchor="middle" font-weight="600" font-size="16">CI 完走待ちの慢性化</text>
+          <text x="140" y="224" text-anchor="middle" fill="#6B6B6B" font-size="15">フォーカス時間が分断</text>
+
+          <rect x="310" y="170" width="240" height="72" rx="4" fill="#F7F7F5" stroke="#D0D0D0" stroke-width="1.25"/>
+          <text x="430" y="202" text-anchor="middle" font-weight="600" font-size="16">赤信号への鈍化</text>
+          <text x="430" y="224" text-anchor="middle" fill="#6B6B6B" font-size="15">本物の失敗を見落とす</text>
+
+          <rect x="600" y="170" width="240" height="72" rx="4" fill="#F7F7F5" stroke="#D0D0D0" stroke-width="1.25"/>
+          <text x="720" y="202" text-anchor="middle" font-weight="600" font-size="16">CI 費用の線形増加</text>
+          <text x="720" y="224" text-anchor="middle" fill="#6B6B6B" font-size="15">年度末 +¥600K / 月</text>
+        </g>
+
+        <!-- ROW 3: Outcome -->
+        <g font-family="Inter, sans-serif" fill="#111">
+          <rect x="160" y="320" width="540" height="72" rx="4" fill="#FFFFFF" stroke="#C75A38" stroke-width="1.75"/>
+          <text x="430" y="352" text-anchor="middle" font-weight="600" font-size="16">開発スループットの低下と、品質に対する信頼の劣化</text>
+          <text x="430" y="374" text-anchor="middle" fill="#6B6B6B" font-size="15">部門 KPI(リードタイム / 障害率)の両方に表れる段階に到達</text>
+        </g>
+
+        <!-- Arrows row 1 -> row 2 -->
+        <g stroke="#6B6B6B" stroke-width="1.25" fill="none">
+          <path d="M140 94 L140 168" marker-end="url(#arr)"/>
+          <path d="M430 94 L430 168" marker-end="url(#arr)"/>
+          <path d="M720 94 L720 168" marker-end="url(#arr)"/>
+          <path d="M260 56 L310 56" marker-end="url(#arr)"/>
+          <path d="M550 56 L600 56" marker-end="url(#arr)"/>
+        </g>
+
+        <!-- Arrows row 2 -> outcome -->
+        <g stroke="#C75A38" stroke-width="1.25" fill="none">
+          <path d="M140 244 L 290 318" marker-end="url(#arrC)"/>
+          <path d="M430 244 L 430 318" marker-end="url(#arrC)"/>
+          <path d="M720 244 L 570 318" marker-end="url(#arrC)"/>
+        </g>
+      </svg>
+      <p class="diagram-caption">
+        灰色の矢印は技術的な直接因果、クレイ色の矢印は部門 KPI への集約を示す。
+        個別の症状はすでに観測されており、放置すると年度後半に部門全体の数値で表面化する。
+      </p>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       04 — 解決後の姿
+       ============================================================= -->
+  <section class="spin-section" id="need-payoff">
+    <h2 class="spin-title">解決後の姿</h2>
+    <p class="spin-intro">
+      4 か月・エンジニア 2 名で CI/CD を再構築した場合に到達する水準を、現状との対比で示す。
+      数値は目標であり、達成には本書末尾のアクションが前提となる。
+    </p>
+    <hr class="section-rule">
+
+    <h3 class="subhead">PR マージリードタイム 中央値</h3>
+    <div class="compare-axis">
+      <div class="ca-row before">
+        <div class="ca-label">Before</div>
+        <div class="ca-bar-wrap">
+          <div class="ca-bar"><div class="ca-bar-fill" style="width: 100%;"></div></div>
+          <div class="ca-value">2.4<span class="unit">日</span></div>
+        </div>
+      </div>
+      <div class="ca-row after">
+        <div class="ca-label">After</div>
+        <div class="ca-bar-wrap">
+          <div class="ca-bar"><div class="ca-bar-fill" style="width: 25%;"></div></div>
+          <div class="ca-value">0.6<span class="unit">日</span></div>
+        </div>
+      </div>
+      <div class="ca-delta">
+        <span class="label">差分</span>
+        <span class="v">−1.8 日(−75%)</span>
+        <span class="note">テスト分割の再設計と preview 環境の差分デプロイ化を前提</span>
+      </div>
+    </div>
+
+    <h3 class="subhead">CI 1 回の平均実行時間</h3>
+    <div class="compare-axis">
+      <div class="ca-row before">
+        <div class="ca-label">Before</div>
+        <div class="ca-bar-wrap">
+          <div class="ca-bar"><div class="ca-bar-fill" style="width: 100%;"></div></div>
+          <div class="ca-value">38<span class="unit">分</span></div>
+        </div>
+      </div>
+      <div class="ca-row after">
+        <div class="ca-label">After</div>
+        <div class="ca-bar-wrap">
+          <div class="ca-bar"><div class="ca-bar-fill" style="width: 31.6%;"></div></div>
+          <div class="ca-value">12<span class="unit">分</span></div>
+        </div>
+      </div>
+      <div class="ca-delta">
+        <span class="label">差分</span>
+        <span class="v">−26 分(−68%)</span>
+        <span class="note">E2E スイートの分割 + 影響範囲ベースのテスト選択を導入した場合</span>
+      </div>
+    </div>
+
+    <h3 class="subhead">CI 月次費用</h3>
+    <div class="compare-axis">
+      <div class="ca-row before">
+        <div class="ca-label">Before</div>
+        <div class="ca-bar-wrap">
+          <div class="ca-bar"><div class="ca-bar-fill" style="width: 100%;"></div></div>
+          <div class="ca-value">¥2.4<span class="unit">M</span></div>
+        </div>
+      </div>
+      <div class="ca-row after">
+        <div class="ca-label">After</div>
+        <div class="ca-bar-wrap">
+          <div class="ca-bar"><div class="ca-bar-fill" style="width: 54.2%;"></div></div>
+          <div class="ca-value">¥1.3<span class="unit">M</span></div>
+        </div>
+      </div>
+      <div class="ca-delta">
+        <span class="label">差分</span>
+        <span class="v">−¥1.1M / 月(−46%)</span>
+        <span class="note">投資回収は約 6 か月の見込み(投資総額の試算は次のステップで提示)</span>
+      </div>
+    </div>
+
+    <div class="payoff-callout">
+      <h3 class="payoff-q-head">確認したい問い</h3>
+      <p>
+        「開発者 18 名のリードタイムを 1/4 に短縮し、年間 ¥13M 規模のインフラ費を抑制できるなら、
+        本件にエンジニア 2 名 × 4 か月を充てる価値は十分にあると判断できるか?」
+      </p>
+    </div>
+  </section>
+
+  <!-- =============================================================
+       05 — 次のステップ
+       ============================================================= -->
+  <section class="spin-section" id="actions">
+    <h2 class="spin-title">次のステップ</h2>
+    <p class="spin-intro">
+      提案を前進させるために、誰が何をいつまでに決めるかを明示する。決裁待ち項目を曖昧にしない。
+    </p>
+    <hr class="section-rule">
+
+    <div class="actions">
+      <div class="action">
+        <div class="at">投資判断の合意</div>
+        <div class="ad">エンジニア 2 名 × 4 か月の投下に対する原則合意を得る。詳細スコープは次のキックオフで確定。</div>
+        <div class="ao">
+          <div class="row"><span class="k">誰が</span><span class="v">事業部長 + 各チームリード</span></div>
+          <div class="row"><span class="k">いつまでに</span><span class="v">2026-05-26 の部門会議</span></div>
+        </div>
+      </div>
+      <div class="action">
+        <div class="at">担当 2 名のアサイン</div>
+        <div class="ad">CI/CD と E2E の両方に明るいエンジニアを 2 名、4 か月間 50% 以上で確保する。</div>
+        <div class="ao">
+          <div class="row"><span class="k">誰が</span><span class="v">各チームリード</span></div>
+          <div class="row"><span class="k">いつまでに</span><span class="v">2026-06-02</span></div>
+        </div>
+      </div>
+      <div class="action">
+        <div class="at">既存 E2E スイートの棚卸し</div>
+        <div class="ad">残すテスト・捨てるテスト・書き直すテストの 3 分類に振り分け、再設計の入力とする。</div>
+        <div class="ao">
+          <div class="row"><span class="k">誰が</span><span class="v">提案者 + QA リード</span></div>
+          <div class="row"><span class="k">いつまでに</span><span class="v">2026-06-09</span></div>
+        </div>
+      </div>
+      <div class="action">
+        <div class="at">成功基準のメトリクス確定</div>
+        <div class="ad">本書で用いた目標値(リードタイム 0.6 日 / CI 12 分 / 費用 ¥1.3M)を、部門の KPI ダッシュボードに追加する。</div>
+        <div class="ao">
+          <div class="row"><span class="k">誰が</span><span class="v">事業部長 + DevEx チーム</span></div>
+          <div class="row"><span class="k">いつまでに</span><span class="v">2026-06-16</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,1507 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Components Reference — Mockup Building Blocks</title>
+<style>
+  /* Design tokens — ベース白。:root が光モード、ダークは [data-theme="dark"]
+     または :root:has(#theme-toggle:checked) で上書き。モックアップ展開時は
+     ここの変数だけ差し替えれば見た目が変わる。 */
+  :root {
+    --bg:           #FFFFFF;
+    --surface:      #FFFFFF;
+    --surface-2:    #F7F7F7;
+    --surface-3:    #EFEFEF;
+    --text:         #141413;
+    --text-muted:   #6B6B66;
+    --text-subtle:  #9A9A93;
+    --border:       #E2E2DD;
+    --border-strong:#C9C9C2;
+    --accent:       #3B6EA5;
+    --accent-soft:  #E8EEF6;
+    --success:      #3F8A4E;
+    --success-soft: #E8F2EA;
+    --warning:      #B5821F;
+    --warning-soft: #FAF1DE;
+    --danger:       #B23A3A;
+    --danger-soft:  #F7E4E4;
+    --info:         #3B6EA5;
+    --info-soft:    #E8EEF6;
+    --shadow-sm:    0 1px 2px rgba(20,20,19,0.04);
+    --shadow-md:    0 4px 14px rgba(20,20,19,0.08);
+
+    --serif: ui-serif, Georgia, serif;
+    --sans:  system-ui, -apple-system, sans-serif;
+    --mono:  ui-monospace, 'SF Mono', Menlo, monospace;
+
+    --radius-sm: 6px;
+    --radius:    10px;
+    --radius-lg: 14px;
+    --radius-pill: 999px;
+  }
+
+  [data-theme="dark"],
+  :root:has(#theme-toggle:checked) {
+    --bg:           #141413;
+    --surface:      #1C1C1B;
+    --surface-2:    #232322;
+    --surface-3:    #2B2B29;
+    --text:         #F2F2EE;
+    --text-muted:   #A8A8A0;
+    --text-subtle:  #6E6E68;
+    --border:       #2F2F2D;
+    --border-strong:#454541;
+    --accent:       #8AB0DA;
+    --accent-soft:  #1F2A38;
+    --success:      #7FB48A;
+    --success-soft: #1E2A21;
+    --warning:      #D9B266;
+    --warning-soft: #2E2616;
+    --danger:       #D77777;
+    --danger-soft:  #2E1C1C;
+    --info:         #8AB0DA;
+    --info-soft:    #1F2A38;
+    --shadow-sm:    0 1px 2px rgba(0,0,0,0.3);
+    --shadow-md:    0 4px 14px rgba(0,0,0,0.4);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 0 28px 96px;
+  }
+
+  /* HEADER & THEME TOGGLE (CSS-only via :checked) */
+  header.page-head {
+    padding: 48px 0 16px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  header.page-head h1 {
+    font-family: var(--serif);
+    font-weight: 500;
+    font-size: 34px;
+    letter-spacing: -0.01em;
+    margin: 0 0 6px;
+  }
+  header.page-head p {
+    color: var(--text-muted);
+    font-size: 13px;
+    margin: 0;
+    max-width: 640px;
+  }
+
+  /* CSS-only theme switch via :has() + :checked.
+     ダークトークンは上の複合セレクタで一括上書き済み。 */
+  #theme-toggle { display: none; }
+  .theme-switch {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 14px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-pill);
+    background: var(--surface);
+    cursor: pointer;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text-muted);
+    user-select: none;
+  }
+  .theme-switch .dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--text);
+  }
+  [data-theme="dark"] .theme-switch .label-light,
+  :root:has(#theme-toggle:checked) .theme-switch .label-light { display: none; }
+  :root:not([data-theme="dark"]):not(:has(#theme-toggle:checked)) .theme-switch .label-dark { display: none; }
+
+  /* SECTION SCAFFOLD */
+  section {
+    padding: 36px 0 8px;
+    border-top: 1px solid var(--border);
+  }
+  section:first-of-type { border-top: none; }
+  .section-head {
+    margin-bottom: 20px;
+  }
+  .section-head h2 {
+    font-family: var(--serif);
+    font-weight: 500;
+    font-size: 22px;
+    margin: 0 0 4px;
+    letter-spacing: -0.005em;
+  }
+  .section-head p {
+    color: var(--text-muted);
+    font-size: 13px;
+    margin: 0;
+  }
+  .variant-label {
+    display: inline-flex;
+    align-items: center;
+    height: 22px;
+    padding: 0 9px;
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-muted);
+    background: var(--surface-2);
+    border-radius: var(--radius-pill);
+    margin-bottom: 10px;
+  }
+  .variant-note {
+    font-size: 12px;
+    color: var(--text-subtle);
+    margin-top: 10px;
+  }
+  .grid {
+    display: grid;
+    gap: 24px;
+  }
+  .grid-2 { grid-template-columns: repeat(2, 1fr); }
+  .grid-3 { grid-template-columns: repeat(3, 1fr); }
+  .grid-4 { grid-template-columns: repeat(4, 1fr); }
+  @media (max-width: 960px) {
+    .grid-3, .grid-4 { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 640px) {
+    .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+  }
+  .row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+  }
+  .stack {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  /* TYPOGRAPHY */
+  .type-h1 { font-family: var(--serif); font-size: 40px; font-weight: 500; letter-spacing: -0.01em; margin: 0; }
+  .type-h2 { font-family: var(--serif); font-size: 30px; font-weight: 500; letter-spacing: -0.005em; margin: 0; }
+  .type-h3 { font-family: var(--sans);  font-size: 22px; font-weight: 600; margin: 0; }
+  .type-h4 { font-family: var(--sans);  font-size: 18px; font-weight: 600; margin: 0; }
+  .type-body { font-size: 14px; margin: 0; }
+  .type-small { font-size: 13px; color: var(--text-muted); margin: 0; }
+  .type-caption { font-size: 12px; color: var(--text-subtle); margin: 0; }
+  .type-mono { font-family: var(--mono); font-size: 13px; margin: 0; }
+  .type-row {
+    display: grid;
+    grid-template-columns: 90px 1fr;
+    align-items: baseline;
+    gap: 16px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .type-row:last-child { border-bottom: none; }
+  .type-row .meta {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-subtle);
+  }
+
+  /* COLOR TOKENS */
+  .swatch {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: var(--surface);
+  }
+  .swatch .chip {
+    height: 64px;
+  }
+  .swatch .info {
+    padding: 10px 12px;
+    font-family: var(--mono);
+    font-size: 11px;
+    line-height: 1.4;
+  }
+  .swatch .info .name { color: var(--text); }
+  .swatch .info .token { color: var(--text-subtle); }
+
+  /* BUTTONS */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    height: 36px;
+    padding: 0 14px;
+    font-family: var(--sans);
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: var(--radius-sm);
+    border: 1px solid transparent;
+    cursor: pointer;
+    background: transparent;
+    color: var(--text);
+    line-height: 1;
+  }
+  .btn-sm { height: 28px; padding: 0 10px; font-size: 13px; }
+  .btn-lg { height: 44px; padding: 0 18px; font-size: 15px; }
+
+  .btn-primary {
+    background: var(--accent);
+    color: var(--bg);
+    border-color: var(--accent);
+  }
+  [data-theme="dark"] .btn-primary,
+  :root:has(#theme-toggle:checked) .btn-primary {
+    color: var(--surface);
+  }
+  .btn-secondary {
+    background: var(--surface);
+    color: var(--text);
+    border-color: var(--border-strong);
+  }
+  .btn-ghost {
+    background: transparent;
+    color: var(--text);
+    border-color: var(--border);
+  }
+  .btn-ghost:hover { background: var(--surface-2); }
+  .btn-danger {
+    background: var(--danger);
+    color: #fff;
+    border-color: var(--danger);
+  }
+  .btn:disabled,
+  .btn.is-disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+
+  /* BADGES / CHIPS / TAGS */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    height: 20px;
+    padding: 0 8px;
+    font-size: 11px;
+    font-weight: 500;
+    border-radius: var(--radius-pill);
+    background: var(--surface-2);
+    color: var(--text-muted);
+  }
+  .badge-info    { background: var(--info-soft);    color: var(--info); }
+  .badge-success { background: var(--success-soft); color: var(--success); }
+  .badge-warning { background: var(--warning-soft); color: var(--warning); }
+  .badge-danger  { background: var(--danger-soft);  color: var(--danger); }
+  .badge-outline {
+    background: transparent;
+    border: 1px solid var(--border-strong);
+    color: var(--text-muted);
+  }
+  .badge .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+    margin-right: 6px;
+  }
+
+  /* AVATAR */
+  .avatar {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: var(--surface-2);
+    color: var(--text-muted);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+  .avatar-sm { width: 24px; height: 24px; font-size: 11px; }
+  .avatar-lg { width: 56px; height: 56px; font-size: 18px; }
+  .avatar-group {
+    display: inline-flex;
+  }
+  .avatar-group .avatar {
+    border: 2px solid var(--bg);
+    margin-left: -8px;
+  }
+  .avatar-group .avatar:first-child { margin-left: 0; }
+
+  /* FORM FIELDS */
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .field-label {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-muted);
+  }
+  .input, .textarea, .select {
+    width: 100%;
+    height: 36px;
+    padding: 0 12px;
+    font-family: var(--sans);
+    font-size: 14px;
+    color: var(--text);
+    background: var(--surface);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-sm);
+    outline: none;
+  }
+  .textarea {
+    height: auto;
+    padding: 10px 12px;
+    min-height: 80px;
+    resize: vertical;
+  }
+  .input:focus, .textarea:focus, .select:focus {
+    border-color: var(--accent);
+  }
+  .input::placeholder, .textarea::placeholder {
+    color: var(--text-subtle);
+  }
+  .input:disabled, .textarea:disabled, .select:disabled {
+    background: var(--surface-2);
+    color: var(--text-subtle);
+    cursor: not-allowed;
+  }
+  .field-help {
+    font-size: 12px;
+    color: var(--text-subtle);
+  }
+  .field-error {
+    font-size: 12px;
+    color: var(--danger);
+  }
+  .field.has-error .input,
+  .field.has-error .textarea {
+    border-color: var(--danger);
+  }
+
+  /* checkbox / radio */
+  .check {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .check input[type="checkbox"],
+  .check input[type="radio"] {
+    appearance: none;
+    width: 16px; height: 16px;
+    border: 1.5px solid var(--border-strong);
+    background: var(--surface);
+    margin: 0;
+    cursor: pointer;
+    position: relative;
+  }
+  .check input[type="checkbox"] { border-radius: 4px; }
+  .check input[type="radio"]    { border-radius: 50%; }
+  .check input:checked {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+  .check input[type="checkbox"]:checked::after {
+    content: "";
+    position: absolute;
+    left: 4px; top: 0;
+    width: 4px; height: 9px;
+    border: solid #fff;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+  }
+  .check input[type="radio"]:checked::after {
+    content: "";
+    position: absolute;
+    left: 4px; top: 4px;
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: #fff;
+  }
+
+  /* switch */
+  .switch {
+    position: relative;
+    display: inline-block;
+    width: 34px;
+    height: 20px;
+  }
+  .switch input { display: none; }
+  .switch .track {
+    position: absolute;
+    inset: 0;
+    background: var(--border-strong);
+    border-radius: var(--radius-pill);
+    transition: background 0.15s;
+  }
+  .switch .track::before {
+    content: "";
+    position: absolute;
+    width: 16px; height: 16px;
+    background: var(--bg);
+    border-radius: 50%;
+    top: 2px; left: 2px;
+    transition: transform 0.15s;
+  }
+  .switch input:checked + .track {
+    background: var(--accent);
+  }
+  .switch input:checked + .track::before {
+    transform: translateX(14px);
+  }
+
+  /* CARDS */
+  .card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 18px;
+  }
+  .card-flat     { background: var(--surface); }
+  .card-outlined { background: var(--surface); border: 1px solid var(--border); }
+  .card-elevated { background: var(--surface); box-shadow: var(--shadow-md); }
+  .card-filled   { background: var(--surface-2); }
+  .card-accent {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+  .card-accent::before {
+    content: "";
+    position: absolute;
+    left: 0; right: 0; top: 0;
+    height: 3px;
+    background: var(--accent);
+  }
+  .card-horizontal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .card-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+  .card-title {
+    font-family: var(--serif);
+    font-size: 16px;
+    font-weight: 500;
+    margin: 0 0 2px;
+    line-height: 1.3;
+  }
+  .card-sub {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin: 0;
+  }
+  .card-body {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin: 0;
+  }
+
+  /* TABLES */
+  .table-wrap {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: var(--surface);
+  }
+  table.tbl {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  table.tbl th,
+  table.tbl td {
+    text-align: left;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  table.tbl thead th {
+    font-weight: 500;
+    color: var(--text-muted);
+    background: var(--surface-2);
+    font-size: 12px;
+  }
+  table.tbl tbody tr:last-child td {
+    border-bottom: none;
+  }
+  table.tbl tbody tr:hover {
+    background: var(--surface-2);
+  }
+  /* zebra variant */
+  table.tbl.tbl-zebra tbody tr:nth-child(odd) td {
+    background: var(--surface-2);
+  }
+  /* dense */
+  table.tbl.tbl-dense th,
+  table.tbl.tbl-dense td {
+    padding: 6px 10px;
+  }
+  /* numeric column right-align */
+  table.tbl td.num,
+  table.tbl th.num { text-align: right; font-variant-numeric: tabular-nums; }
+
+  /* LISTS */
+  ul.list-plain {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+  }
+  ul.list-plain li {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  ul.list-plain li:last-child { border-bottom: none; }
+  ul.list-plain .item-main {
+    flex: 1;
+    min-width: 0;
+  }
+  ul.list-plain .item-title {
+    font-size: 14px;
+    margin: 0 0 2px;
+  }
+  ul.list-plain .item-desc {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin: 0;
+  }
+  /* description list */
+  dl.dlist {
+    margin: 0;
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    row-gap: 8px;
+    column-gap: 16px;
+  }
+  dl.dlist dt {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-family: var(--mono);
+  }
+  dl.dlist dd {
+    margin: 0;
+    font-size: 14px;
+  }
+  /* bullet list */
+  ul.list-bullet {
+    margin: 0;
+    padding-left: 18px;
+    font-size: 14px;
+  }
+  ul.list-bullet li {
+    margin-bottom: 4px;
+  }
+
+  /* ALERT / CALLOUT */
+  .alert {
+    display: flex;
+    gap: 12px;
+    padding: 12px 14px;
+    border-radius: var(--radius);
+    font-size: 13px;
+    border: 1px solid;
+  }
+  .alert .alert-icon {
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    background: currentColor;
+    opacity: 0.9;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--bg);
+    font-size: 11px;
+    font-weight: 700;
+    margin-top: 1px;
+  }
+  .alert-info {
+    background: var(--info-soft);
+    border-color: transparent;
+    color: var(--info);
+  }
+  .alert-success {
+    background: var(--success-soft);
+    border-color: transparent;
+    color: var(--success);
+  }
+  .alert-warning {
+    background: var(--warning-soft);
+    border-color: transparent;
+    color: var(--warning);
+  }
+  .alert-danger {
+    background: var(--danger-soft);
+    border-color: transparent;
+    color: var(--danger);
+  }
+  .alert .alert-body {
+    color: var(--text);
+  }
+  .alert .alert-body strong {
+    display: block;
+    margin-bottom: 2px;
+    color: inherit;
+  }
+
+  /* BREADCRUMB */
+  .breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: var(--text-muted);
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .breadcrumb li { display: inline-flex; align-items: center; gap: 6px; }
+  .breadcrumb a {
+    color: var(--text-muted);
+    text-decoration: none;
+  }
+  .breadcrumb a:hover { color: var(--text); }
+  .breadcrumb li[aria-current="page"] { color: var(--text); }
+  .breadcrumb .sep {
+    color: var(--text-subtle);
+  }
+
+  /* TABS (CSS-only via :checked siblings) */
+  .tabs {
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    gap: 4px;
+  }
+  .tabs .tab {
+    padding: 8px 14px;
+    font-size: 13px;
+    color: var(--text-muted);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+  }
+  .tabs .tab.is-active {
+    color: var(--text);
+    border-bottom-color: var(--accent);
+  }
+  .tab-panel {
+    padding: 16px 0;
+    font-size: 14px;
+    color: var(--text-muted);
+  }
+
+  /* PROGRESS / METER */
+  .progress {
+    width: 100%;
+    height: 6px;
+    background: var(--surface-3);
+    border-radius: var(--radius-pill);
+    overflow: hidden;
+  }
+  .progress .bar {
+    height: 100%;
+    background: var(--accent);
+    border-radius: var(--radius-pill);
+  }
+  .ring {
+    --p: 65;
+    --size: 56px;
+    width: var(--size);
+    height: var(--size);
+    border-radius: 50%;
+    background:
+      conic-gradient(var(--accent) calc(var(--p) * 1%), var(--surface-3) 0);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+  .ring::before {
+    content: "";
+    position: absolute;
+    inset: 6px;
+    background: var(--bg);
+    border-radius: 50%;
+  }
+  .ring .ring-label {
+    position: relative;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text);
+  }
+
+  /* EMPTY STATE */
+  .empty {
+    border: 1px dashed var(--border-strong);
+    border-radius: var(--radius);
+    padding: 36px 20px;
+    text-align: center;
+    background: var(--surface);
+  }
+  .empty .empty-icon {
+    width: 36px; height: 36px;
+    margin: 0 auto 12px;
+    border-radius: 50%;
+    background: var(--surface-2);
+  }
+  .empty h4 {
+    font-family: var(--serif);
+    font-weight: 500;
+    font-size: 16px;
+    margin: 0 0 4px;
+  }
+  .empty p {
+    color: var(--text-muted);
+    font-size: 13px;
+    margin: 0 0 14px;
+  }
+
+  /* LAYOUT PRIMITIVES (visual examples) */
+  .layout-box {
+    background: var(--surface-2);
+    border: 1px dashed var(--border-strong);
+    border-radius: var(--radius-sm);
+    padding: 10px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+  .layout-demo {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px;
+    background: var(--surface);
+  }
+  .layout-stack > * + * { margin-top: 8px; }
+  .layout-row-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+  .layout-sidebar {
+    display: grid;
+    grid-template-columns: 120px 1fr;
+    gap: 8px;
+  }
+
+  /* DIVIDER / SECTION HEADER */
+  hr.divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 0;
+  }
+  .section-heading {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-subtle);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .section-heading::after {
+    content: "";
+    flex: 1;
+    border-top: 1px solid var(--border);
+  }
+
+  /* CODE / KBD */
+  code.inline {
+    font-family: var(--mono);
+    font-size: 12px;
+    padding: 1px 6px;
+    background: var(--surface-2);
+    border-radius: 4px;
+    color: var(--text);
+  }
+  pre.code-block {
+    margin: 0;
+    padding: 14px 16px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font-family: var(--mono);
+    font-size: 12px;
+    line-height: 1.6;
+    overflow-x: auto;
+    color: var(--text);
+  }
+  kbd {
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 2px 6px;
+    border: 1px solid var(--border-strong);
+    border-bottom-width: 2px;
+    border-radius: 4px;
+    background: var(--surface);
+    color: var(--text);
+  }
+
+  /* NAVBAR & FOOTER (bonus layout) */
+  .navbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+  .navbar .brand {
+    font-family: var(--serif);
+    font-size: 16px;
+    font-weight: 500;
+  }
+  .navbar nav {
+    display: flex;
+    gap: 18px;
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+  .navbar nav a {
+    color: var(--text-muted);
+    text-decoration: none;
+  }
+  .navbar nav a:hover { color: var(--text); }
+
+  .footer-demo {
+    padding: 20px;
+    background: var(--surface-2);
+    border-radius: var(--radius);
+    font-size: 12px;
+    color: var(--text-muted);
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HEADER + THEME TOGGLE -->
+  <header class="page-head">
+    <div>
+      <h1>Components reference</h1>
+      <p>Mockup building blocks. All components are CSS-only and use design tokens defined at <code class="inline">:root</code>. Toggle theme to verify dark-mode token coverage.</p>
+    </div>
+    <label class="theme-switch" for="theme-toggle">
+      <input type="checkbox" id="theme-toggle">
+      <span class="dot"></span>
+      <span class="label-light">Light → Dark</span>
+      <span class="label-dark">Dark → Light</span>
+    </label>
+  </header>
+
+  <!-- 1. TYPOGRAPHY -->
+  <section>
+    <div class="section-head">
+      <h2>Typography</h2>
+      <p>Heading scale (serif), body (sans), captions, and mono. Replace font tokens to re-theme.</p>
+    </div>
+    <div class="type-row"><span class="meta">h1 / 40</span><h1 class="type-h1">The quick brown fox</h1></div>
+    <div class="type-row"><span class="meta">h2 / 30</span><h2 class="type-h2">The quick brown fox</h2></div>
+    <div class="type-row"><span class="meta">h3 / 22</span><h3 class="type-h3">The quick brown fox</h3></div>
+    <div class="type-row"><span class="meta">h4 / 18</span><h4 class="type-h4">The quick brown fox</h4></div>
+    <div class="type-row"><span class="meta">body / 14</span><p class="type-body">The quick brown fox jumps over the lazy dog.</p></div>
+    <div class="type-row"><span class="meta">small / 13</span><p class="type-small">The quick brown fox jumps over the lazy dog.</p></div>
+    <div class="type-row"><span class="meta">caption / 12</span><p class="type-caption">The quick brown fox jumps over the lazy dog.</p></div>
+    <div class="type-row"><span class="meta">mono / 13</span><p class="type-mono">const fox = "quick";</p></div>
+  </section>
+
+  <!-- 2. COLOR TOKENS -->
+  <section>
+    <div class="section-head">
+      <h2>Color tokens</h2>
+      <p>Semantic tokens that adapt to <code class="inline">[data-theme]</code>. Mockups should never use raw hex.</p>
+    </div>
+    <div class="grid grid-4">
+      <div class="swatch"><div class="chip" style="background:var(--bg)"></div><div class="info"><div class="name">bg</div><div class="token">--bg</div></div></div>
+      <div class="swatch"><div class="chip" style="background:var(--surface);border-bottom:1px solid var(--border)"></div><div class="info"><div class="name">surface</div><div class="token">--surface</div></div></div>
+      <div class="swatch"><div class="chip" style="background:var(--surface-2)"></div><div class="info"><div class="name">surface-2</div><div class="token">--surface-2</div></div></div>
+      <div class="swatch"><div class="chip" style="background:var(--surface-3)"></div><div class="info"><div class="name">surface-3</div><div class="token">--surface-3</div></div></div>
+      <div class="swatch"><div class="chip" style="background:var(--text)"></div><div class="info"><div class="name">text</div><div class="token">--text</div></div></div>
+      <div class="swatch"><div class="chip" style="background:var(--text-muted)"></div><div class="info"><div class="name">text-muted</div><div class="token">--text-muted</div></div></div>
+      <div class="swatch"><div class="chip" style="background:var(--border-strong)"></div><div class="info"><div class="name">border-strong</div><div class="token">--border-strong</div></div></div>
+      <div class="swatch"><div class="chip" style="background:var(--accent)"></div><div class="info"><div class="name">accent</div><div class="token">--accent</div></div></div>
+      <div class="swatch"><div class="chip" style="background:var(--success)"></div><div class="info"><div class="name">success</div><div class="token">--success</div></div></div>
+      <div class="swatch"><div class="chip" style="background:var(--warning)"></div><div class="info"><div class="name">warning</div><div class="token">--warning</div></div></div>
+      <div class="swatch"><div class="chip" style="background:var(--danger)"></div><div class="info"><div class="name">danger</div><div class="token">--danger</div></div></div>
+      <div class="swatch"><div class="chip" style="background:var(--info)"></div><div class="info"><div class="name">info</div><div class="token">--info</div></div></div>
+    </div>
+  </section>
+
+  <!-- 3. BUTTONS -->
+  <section>
+    <div class="section-head">
+      <h2>Buttons</h2>
+      <p>Variants × sizes × disabled. Use <code class="inline">.btn-primary</code> for one CTA per surface.</p>
+    </div>
+
+    <div class="stack">
+      <div>
+        <span class="variant-label">Variants</span>
+        <div class="row">
+          <button class="btn btn-primary">Primary</button>
+          <button class="btn btn-secondary">Secondary</button>
+          <button class="btn btn-ghost">Ghost</button>
+          <button class="btn btn-danger">Danger</button>
+        </div>
+      </div>
+      <div>
+        <span class="variant-label">Sizes</span>
+        <div class="row">
+          <button class="btn btn-secondary btn-sm">Small</button>
+          <button class="btn btn-secondary">Medium</button>
+          <button class="btn btn-secondary btn-lg">Large</button>
+        </div>
+      </div>
+      <div>
+        <span class="variant-label">States</span>
+        <div class="row">
+          <button class="btn btn-primary">Default</button>
+          <button class="btn btn-primary is-disabled" disabled>Disabled</button>
+          <button class="btn btn-ghost is-disabled" disabled>Ghost / disabled</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. BADGES / CHIPS / TAGS -->
+  <section>
+    <div class="section-head">
+      <h2>Badges</h2>
+      <p>Status pills. Use semantic variants; avoid color-only meaning (pair with text).</p>
+    </div>
+    <div class="row">
+      <span class="badge">Default</span>
+      <span class="badge badge-info"><span class="dot"></span>Info</span>
+      <span class="badge badge-success"><span class="dot"></span>Active</span>
+      <span class="badge badge-warning"><span class="dot"></span>Pending</span>
+      <span class="badge badge-danger"><span class="dot"></span>Failed</span>
+      <span class="badge badge-outline">Outline</span>
+    </div>
+  </section>
+
+  <!-- 5. AVATARS -->
+  <section>
+    <div class="section-head">
+      <h2>Avatars</h2>
+      <p>Sizes and groups. Background uses <code class="inline">--surface-2</code> for neutral tone.</p>
+    </div>
+    <div class="row">
+      <span class="avatar avatar-sm">JS</span>
+      <span class="avatar">JS</span>
+      <span class="avatar avatar-lg">JS</span>
+      <div class="avatar-group">
+        <span class="avatar">A</span>
+        <span class="avatar">B</span>
+        <span class="avatar">C</span>
+        <span class="avatar">+5</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6. CARDS -->
+  <section>
+    <div class="section-head">
+      <h2>Cards</h2>
+      <p>Structural variants — pick by surface context, not aesthetics.</p>
+    </div>
+    <div class="grid grid-3">
+
+      <div>
+        <span class="variant-label">A / Flat</span>
+        <div class="card card-flat">
+          <div class="card-head">
+            <span class="avatar">WP</span>
+            <div>
+              <p class="card-title">Weekly planning</p>
+              <p class="card-sub">12 tasks / due Friday</p>
+            </div>
+          </div>
+          <p class="card-body">Best for dense lists on tinted backgrounds.</p>
+        </div>
+        <p class="variant-note">no border, no shadow</p>
+      </div>
+
+      <div>
+        <span class="variant-label">B / Outlined</span>
+        <div class="card card-outlined">
+          <div class="card-head">
+            <span class="avatar">WP</span>
+            <div>
+              <p class="card-title">Weekly planning</p>
+              <p class="card-sub">12 tasks / due Friday</p>
+            </div>
+          </div>
+          <p class="card-body">Default content card on neutral surfaces.</p>
+        </div>
+        <p class="variant-note">1px border, no shadow</p>
+      </div>
+
+      <div>
+        <span class="variant-label">C / Elevated</span>
+        <div class="card card-elevated">
+          <div class="card-head">
+            <span class="avatar">WP</span>
+            <div>
+              <p class="card-title">Weekly planning</p>
+              <p class="card-sub">12 tasks / due Friday</p>
+            </div>
+          </div>
+          <p class="card-body">Draggable items, popovers, modals.</p>
+        </div>
+        <p class="variant-note">no border, soft shadow</p>
+      </div>
+
+      <div>
+        <span class="variant-label">D / Filled</span>
+        <div class="card card-filled">
+          <div class="card-head">
+            <span class="avatar">WP</span>
+            <div>
+              <p class="card-title">Weekly planning</p>
+              <p class="card-sub">12 tasks / due Friday</p>
+            </div>
+          </div>
+          <p class="card-body">Nested cards inside white panels.</p>
+        </div>
+        <p class="variant-note">tinted background, no border</p>
+      </div>
+
+      <div>
+        <span class="variant-label">E / Accent stripe</span>
+        <div class="card card-accent">
+          <div class="card-head">
+            <span class="avatar">WP</span>
+            <div>
+              <p class="card-title">Weekly planning</p>
+              <p class="card-sub">12 tasks / due Friday</p>
+            </div>
+          </div>
+          <p class="card-body">Pinned or priority items.</p>
+        </div>
+        <p class="variant-note">top accent bar</p>
+      </div>
+
+      <div>
+        <span class="variant-label">F / Horizontal</span>
+        <div class="card card-horizontal">
+          <span class="avatar">WP</span>
+          <div style="flex:1;min-width:0">
+            <p class="card-title">Weekly planning</p>
+            <p class="card-sub">12 tasks / due Friday</p>
+          </div>
+          <button class="btn btn-ghost btn-sm">Open</button>
+        </div>
+        <p class="variant-note">compact row, sidebars</p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- 7. TABLES -->
+  <section>
+    <div class="section-head">
+      <h2>Tables</h2>
+      <p>Default, zebra, and dense. Right-align numerics with <code class="inline">.num</code>.</p>
+    </div>
+
+    <div class="stack">
+      <div>
+        <span class="variant-label">Default</span>
+        <div class="table-wrap">
+          <table class="tbl">
+            <thead><tr>
+              <th>Name</th><th>Status</th><th>Owner</th><th class="num">Items</th>
+            </tr></thead>
+            <tbody>
+              <tr><td>Atlas migration</td><td><span class="badge badge-success"><span class="dot"></span>Active</span></td><td>Hana</td><td class="num">128</td></tr>
+              <tr><td>Vendor review</td><td><span class="badge badge-warning"><span class="dot"></span>Pending</span></td><td>Owen</td><td class="num">42</td></tr>
+              <tr><td>Q3 retrospective</td><td><span class="badge"><span class="dot"></span>Draft</span></td><td>Mira</td><td class="num">8</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div>
+        <span class="variant-label">Zebra / dense</span>
+        <div class="table-wrap">
+          <table class="tbl tbl-zebra tbl-dense">
+            <thead><tr><th>SKU</th><th>Product</th><th class="num">Stock</th><th class="num">Price</th></tr></thead>
+            <tbody>
+              <tr><td>BR-001</td><td>Linen tote</td><td class="num">142</td><td class="num">$24.00</td></tr>
+              <tr><td>BR-002</td><td>Canvas pouch</td><td class="num">76</td><td class="num">$12.50</td></tr>
+              <tr><td>BR-003</td><td>Cotton scarf</td><td class="num">8</td><td class="num">$32.00</td></tr>
+              <tr><td>BR-004</td><td>Leather strap</td><td class="num">231</td><td class="num">$18.00</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 8. LISTS -->
+  <section>
+    <div class="section-head">
+      <h2>Lists</h2>
+      <p>Action list, description list, and bullet list.</p>
+    </div>
+    <div class="grid grid-3">
+      <div>
+        <span class="variant-label">Action list</span>
+        <ul class="list-plain">
+          <li>
+            <span class="avatar avatar-sm">A</span>
+            <div class="item-main">
+              <p class="item-title">Atlas migration</p>
+              <p class="item-desc">Updated 2h ago</p>
+            </div>
+            <span class="badge badge-success"><span class="dot"></span>Active</span>
+          </li>
+          <li>
+            <span class="avatar avatar-sm">V</span>
+            <div class="item-main">
+              <p class="item-title">Vendor review</p>
+              <p class="item-desc">Updated yesterday</p>
+            </div>
+            <span class="badge badge-warning"><span class="dot"></span>Pending</span>
+          </li>
+          <li>
+            <span class="avatar avatar-sm">Q</span>
+            <div class="item-main">
+              <p class="item-title">Q3 retrospective</p>
+              <p class="item-desc">Draft</p>
+            </div>
+            <button class="btn btn-ghost btn-sm">Open</button>
+          </li>
+        </ul>
+      </div>
+
+      <div>
+        <span class="variant-label">Description list</span>
+        <dl class="dlist">
+          <dt>name</dt><dd>Birchline</dd>
+          <dt>version</dt><dd>0.4.2</dd>
+          <dt>status</dt><dd><span class="badge badge-success"><span class="dot"></span>Active</span></dd>
+          <dt>owner</dt><dd>design-systems</dd>
+          <dt>updated</dt><dd>2 hours ago</dd>
+        </dl>
+      </div>
+
+      <div>
+        <span class="variant-label">Bullet list</span>
+        <ul class="list-bullet">
+          <li>First item with a short label</li>
+          <li>Second item, slightly longer to show wrapping behaviour</li>
+          <li>Third item</li>
+          <li>Fourth item with <code class="inline">inline code</code></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 9. FORM FIELDS -->
+  <section>
+    <div class="section-head">
+      <h2>Form fields</h2>
+      <p>Inputs, textarea, select, checkbox, radio, and switch. Static — JS not required for the visual.</p>
+    </div>
+    <div class="grid grid-2">
+      <div class="stack">
+        <div class="field">
+          <label class="field-label">Name</label>
+          <input class="input" type="text" placeholder="Jane Doe">
+          <span class="field-help">Visible to your team.</span>
+        </div>
+        <div class="field has-error">
+          <label class="field-label">Email</label>
+          <input class="input" type="email" value="jane@invalid">
+          <span class="field-error">Not a valid email address.</span>
+        </div>
+        <div class="field">
+          <label class="field-label">Bio</label>
+          <textarea class="textarea" placeholder="A short description..."></textarea>
+        </div>
+        <div class="field">
+          <label class="field-label">Role</label>
+          <select class="select">
+            <option>Admin</option>
+            <option>Editor</option>
+            <option>Viewer</option>
+          </select>
+        </div>
+        <div class="field">
+          <label class="field-label">Disabled</label>
+          <input class="input" type="text" value="Read-only" disabled>
+        </div>
+      </div>
+
+      <div class="stack">
+        <div>
+          <span class="variant-label">Checkbox</span>
+          <div class="stack" style="gap:8px">
+            <label class="check"><input type="checkbox" checked> Send weekly digest</label>
+            <label class="check"><input type="checkbox"> Notify on mention</label>
+            <label class="check"><input type="checkbox" disabled> Disabled option</label>
+          </div>
+        </div>
+        <div>
+          <span class="variant-label">Radio</span>
+          <div class="stack" style="gap:8px">
+            <label class="check"><input type="radio" name="r" checked> Public</label>
+            <label class="check"><input type="radio" name="r"> Team-only</label>
+            <label class="check"><input type="radio" name="r"> Private</label>
+          </div>
+        </div>
+        <div>
+          <span class="variant-label">Switch</span>
+          <div class="row">
+            <label class="switch"><input type="checkbox" checked><span class="track"></span></label>
+            <span class="type-small">Enable beta features</span>
+          </div>
+          <div class="row" style="margin-top:8px">
+            <label class="switch"><input type="checkbox"><span class="track"></span></label>
+            <span class="type-small">Show advanced settings</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 10. ALERTS / CALLOUTS -->
+  <section>
+    <div class="section-head">
+      <h2>Alerts</h2>
+      <p>Four semantic states. Keep copy short; use <code class="inline">&lt;strong&gt;</code> for the lead.</p>
+    </div>
+    <div class="stack">
+      <div class="alert alert-info">
+        <span class="alert-icon">i</span>
+        <div class="alert-body"><strong>Heads up.</strong> Scheduled maintenance on Friday from 02:00–03:00 UTC.</div>
+      </div>
+      <div class="alert alert-success">
+        <span class="alert-icon">✓</span>
+        <div class="alert-body"><strong>Saved.</strong> Your changes have been published.</div>
+      </div>
+      <div class="alert alert-warning">
+        <span class="alert-icon">!</span>
+        <div class="alert-body"><strong>Approaching limit.</strong> You've used 82% of your monthly quota.</div>
+      </div>
+      <div class="alert alert-danger">
+        <span class="alert-icon">!</span>
+        <div class="alert-body"><strong>Failed.</strong> Unable to reach the upstream service. Retry in a moment.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 11. BREADCRUMB -->
+  <section>
+    <div class="section-head">
+      <h2>Breadcrumb</h2>
+      <p>Linear path indicator. Last item is the current page.</p>
+    </div>
+    <ol class="breadcrumb">
+      <li><a href="#">Workspace</a></li>
+      <li class="sep">/</li>
+      <li><a href="#">Projects</a></li>
+      <li class="sep">/</li>
+      <li><a href="#">Atlas migration</a></li>
+      <li class="sep">/</li>
+      <li aria-current="page">Settings</li>
+    </ol>
+  </section>
+
+  <!-- 12. TABS -->
+  <section>
+    <div class="section-head">
+      <h2>Tabs</h2>
+      <p>Static — one tab is marked active. Real interactivity is delegated to the framework using this reference.</p>
+    </div>
+    <div class="tabs">
+      <div class="tab is-active">Overview</div>
+      <div class="tab">Activity</div>
+      <div class="tab">Members</div>
+      <div class="tab">Settings</div>
+    </div>
+    <div class="tab-panel">Overview content goes here.</div>
+  </section>
+
+  <!-- 13. PROGRESS / METER -->
+  <section>
+    <div class="section-head">
+      <h2>Progress</h2>
+      <p>Linear bar and conic-gradient ring. No JS — values are static.</p>
+    </div>
+    <div class="grid grid-2">
+      <div class="stack">
+        <div>
+          <div class="row" style="justify-content:space-between;margin-bottom:6px">
+            <span class="type-small">Storage</span>
+            <span class="type-caption">64%</span>
+          </div>
+          <div class="progress"><div class="bar" style="width:64%"></div></div>
+        </div>
+        <div>
+          <div class="row" style="justify-content:space-between;margin-bottom:6px">
+            <span class="type-small">Bandwidth</span>
+            <span class="type-caption">22%</span>
+          </div>
+          <div class="progress"><div class="bar" style="width:22%"></div></div>
+        </div>
+        <div>
+          <div class="row" style="justify-content:space-between;margin-bottom:6px">
+            <span class="type-small">API calls</span>
+            <span class="type-caption">91%</span>
+          </div>
+          <div class="progress"><div class="bar" style="width:91%;background:var(--warning)"></div></div>
+        </div>
+      </div>
+      <div class="row" style="gap:24px">
+        <div class="ring" style="--p:35"><span class="ring-label">35%</span></div>
+        <div class="ring" style="--p:65"><span class="ring-label">65%</span></div>
+        <div class="ring" style="--p:88"><span class="ring-label">88%</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 14. EMPTY STATE -->
+  <section>
+    <div class="section-head">
+      <h2>Empty state</h2>
+      <p>Used when a list, table, or panel has no content.</p>
+    </div>
+    <div class="empty">
+      <div class="empty-icon"></div>
+      <h4>No projects yet</h4>
+      <p>Create your first project to organise tasks, files, and discussions.</p>
+      <button class="btn btn-primary">Create project</button>
+    </div>
+  </section>
+
+  <!-- 15. LAYOUT PRIMITIVES -->
+  <section>
+    <div class="section-head">
+      <h2>Layout primitives</h2>
+      <p>Visual references for Stack / Grid / Sidebar layouts.</p>
+    </div>
+    <div class="grid grid-3">
+      <div>
+        <span class="variant-label">Stack (vertical)</span>
+        <div class="layout-demo layout-stack">
+          <div class="layout-box">item</div>
+          <div class="layout-box">item</div>
+          <div class="layout-box">item</div>
+        </div>
+      </div>
+      <div>
+        <span class="variant-label">Grid (3 cols)</span>
+        <div class="layout-demo">
+          <div class="layout-row-grid">
+            <div class="layout-box">1</div>
+            <div class="layout-box">2</div>
+            <div class="layout-box">3</div>
+            <div class="layout-box">4</div>
+            <div class="layout-box">5</div>
+            <div class="layout-box">6</div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <span class="variant-label">Sidebar</span>
+        <div class="layout-demo">
+          <div class="layout-sidebar">
+            <div class="layout-box">sidebar</div>
+            <div class="layout-box">main</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 16. DIVIDER / SECTION HEADER -->
+  <section>
+    <div class="section-head">
+      <h2>Divider & section heading</h2>
+      <p>Use <code class="inline">&lt;hr&gt;</code> for hard breaks and a label-with-rule for soft section starts.</p>
+    </div>
+    <div class="stack">
+      <hr class="divider">
+      <div class="section-heading">Recent activity</div>
+      <hr class="divider">
+      <div class="section-heading">Archived</div>
+    </div>
+  </section>
+
+  <!-- 17. CODE & KBD -->
+  <section>
+    <div class="section-head">
+      <h2>Code & kbd</h2>
+      <p>Inline code, block code, and keyboard keys.</p>
+    </div>
+    <div class="stack">
+      <p class="type-body">Run <code class="inline">npm install birchline</code> to add the library, then press <kbd>⌘</kbd>+<kbd>K</kbd> to open the palette.</p>
+      <pre class="code-block">import { Card } from "birchline";
+
+export default function Page() {
+  return &lt;Card variant="outlined"&gt;Hello&lt;/Card&gt;;
+}</pre>
+    </div>
+  </section>
+
+  <!-- BONUS / NAVBAR + FOOTER (page-shell helpers) -->
+  <section>
+    <div class="section-head">
+      <h2>Page shell (navbar & footer)</h2>
+      <p>Minimal navbar and footer for mockup pages.</p>
+    </div>
+    <div class="stack">
+      <div class="navbar">
+        <div class="brand">Birchline</div>
+        <nav>
+          <a href="#">Docs</a>
+          <a href="#">Components</a>
+          <a href="#">Pricing</a>
+          <a href="#">Sign in</a>
+        </nav>
+      </div>
+      <div class="footer-demo">© 2026 Birchline / Design system reference</div>
+    </div>
+  </section>
+
+</div>
+</body>
+</html>

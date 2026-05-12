@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>顧客オンボーディング改善 — 現状分析と打ち手</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=JetBrains+Mono:wght@500;700&family=Noto+Serif+JP:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:      #FFFFFF;
+    --card:    #FAF9F5;
+    --slate:   #141413;
+    --clay:    #D97757;
+    --oat:     #E3DACC;
+    --olive:   #788C5D;
+    --sky:     #6A8CAF;
+    --gray-150:#F0EEE6;
+    --gray-300:#D1CFC5;
+    --gray-500:#87867F;
+    --gray-700:#3D3D3A;
+    --serif: "Noto Serif JP", Georgia, "Times New Roman", serif;
+    --sans:  "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Hiragino Sans", "Noto Sans JP", sans-serif;
+    --mono:  "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--gray-700);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+    padding: 56px 24px 120px;
+  }
+  .page {
+    max-width: 760px;
+    margin: 0 auto;
+  }
+
+  /* ── header ───────────────────────────── */
+  h1 {
+    font-family: var(--serif);
+    font-weight: 500;
+    font-size: 30px;
+    color: var(--slate);
+    letter-spacing: 0;
+    margin-bottom: 14px;
+    line-height: 1.4;
+  }
+  .lead {
+    max-width: 640px;
+    margin-bottom: 8px;
+    color: var(--gray-700);
+  }
+  h2 {
+    font-family: var(--serif);
+    font-weight: 500;
+    font-size: 22px;
+    color: var(--slate);
+    margin: 48px 0 16px;
+    letter-spacing: 0.04em;
+  }
+  p { margin-bottom: 12px; max-width: 680px; }
+
+  /* ── lists (asis / tobe / problem) ─────── */
+  ul {
+    list-style: none;
+    margin: 8px 0 16px;
+    padding: 0;
+  }
+  ul li {
+    position: relative;
+    padding: 4px 0 4px 22px;
+    max-width: 660px;
+  }
+  ul li::before {
+    content: "";
+    position: absolute;
+    left: 4px;
+    top: 14px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--clay);
+  }
+  /* asis: muted dots */
+  .asis ul li::before { background: var(--gray-300); }
+  /* tobe: olive dots */
+  .tobe ul li::before { background: var(--olive); }
+  /* problem: clay dots (default) */
+
+  /* ── problem: so-what callout ──────────── */
+  .so-what {
+    font-family: var(--serif);
+    font-size: 18px;
+    line-height: 1.6;
+    color: var(--slate);
+    background: var(--card);
+    border-left: 3px solid var(--clay);
+    padding: 14px 18px;
+    margin: 12px 0 16px;
+    max-width: 660px;
+    border-radius: 0 6px 6px 0;
+  }
+
+  /* ── task table ────────────────────────── */
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    max-width: 680px;
+    font-size: 14px;
+    margin: 12px 0 16px;
+  }
+  th, td {
+    text-align: left;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--gray-300);
+    vertical-align: top;
+  }
+  th {
+    font-family: var(--mono);
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--slate);
+    font-weight: 700;
+    border-bottom: 1.5px solid var(--gray-300);
+  }
+  td.task-name { color: var(--slate); }
+  td.priority {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    width: 100px;
+    color: var(--slate);
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <h1>顧客オンボーディングの初週離脱を減らす</h1>
+  <p class="lead">
+    新規ユーザーの32%が登録後7日以内に離脱している。現状と理想を整理し、なぜそれが起きるのか、何から手を付けるかをまとめた。
+  </p>
+
+  <section class="asis">
+    <h2>ASIS</h2>
+    <ul>
+      <li>新規登録から初回機能利用までの中央値は4.2日</li>
+      <li>ウェルカムメールの開封率は38%、CTAクリック率は6%</li>
+      <li>セットアップ画面は11ステップで、平均完了率は54%</li>
+      <li>カスタマーサクセス担当のアサインは登録から平均9日後</li>
+    </ul>
+  </section>
+
+  <section class="tobe">
+    <h2>TOBE</h2>
+    <ul>
+      <li>登録から初回機能利用まで24時間以内に到達</li>
+      <li>ウェルカムフローのCTAクリック率を20%以上に</li>
+      <li>セットアップは5ステップ以内、完了率85%以上</li>
+      <li>登録当日にカスタマーサクセスから一次接触</li>
+    </ul>
+  </section>
+
+  <section class="problem">
+    <h2>PROBLEM</h2>
+    <div class="so-what">
+      初週のユーザーは「価値を体験する前に手間に押し潰されている」。
+    </div>
+    <ul>
+      <li>セットアップ画面が機能ごとに分割され、全体像が見えない</li>
+      <li>初期データ投入を手動で求めており、空の状態が長く続く</li>
+      <li>サクセス接触までのリードタイムが長く、つまずきが放置される</li>
+      <li>ウェルカムメールが汎用文面で、ユーザー固有の次の一歩を示せていない</li>
+    </ul>
+  </section>
+
+  <section class="task">
+    <h2>TASK</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Task</th>
+          <th>Priority</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="task-name">セットアップを5ステップに統合し、進捗バーを明示する</td>
+          <td class="priority high">High</td>
+        </tr>
+        <tr>
+          <td class="task-name">サンプルデータを自動投入し、初日から空状態を解消する</td>
+          <td class="priority high">High</td>
+        </tr>
+        <tr>
+          <td class="task-name">登録当日のサクセス自動アサインフローを構築する</td>
+          <td class="priority mid">Mid</td>
+        </tr>
+        <tr>
+          <td class="task-name">ウェルカムメールを業種別テンプレートに分岐させる</td>
+          <td class="priority mid">Mid</td>
+        </tr>
+        <tr>
+          <td class="task-name">完了率トラッキングをダッシュボードに組み込む</td>
+          <td class="priority low">Low</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+</div>
+</body>
+</html>

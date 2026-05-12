@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>タスク同期処理におけるリトライ不具合について</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    /* ---- Palette: monochrome base ---- */
+    --paper:      #FFFFFF;
+    --ink:        #1A1A1A;
+    --ink-soft:   #3A3A3A;
+    --muted:      #6B6B6B;
+    --line:       #D8D8D8;
+    --line-soft:  #ECECEC;
+    --shade:      #F6F6F6;
+
+    /* Restrained accents for severity / priority */
+    --accent-critical: #8B1A1A;
+    --accent-moderate: #5A5A5A;
+    --accent-minor:    #9A9A9A;
+    --accent-review:   #8B1A1A;
+
+    /* ---- Typography ---- */
+    --sans: 'Inter', 'Noto Sans JP', -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Yu Gothic', sans-serif;
+    --mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+    /* ---- Geometry ---- */
+    --radius: 2px;
+    --border: 1px solid var(--line);
+  }
+
+  * { box-sizing: border-box; }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    margin: 0;
+    padding: 64px 32px 96px;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 14.5px;
+    line-height: 1.75;
+    font-feature-settings: "palt" 1;
+  }
+
+  .page {
+    max-width: 760px;
+    margin: 0 auto;
+  }
+
+  /* ---------- Header ---------- */
+  header {
+    margin-bottom: 56px;
+    padding-bottom: 28px;
+    border-bottom: 2px solid var(--ink);
+  }
+  .report-date {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 0.04em;
+    margin-bottom: 14px;
+  }
+  h1 {
+    font-family: var(--sans);
+    font-weight: 600;
+    font-size: 26px;
+    letter-spacing: 0.01em;
+    margin: 0;
+    line-height: 1.4;
+    color: var(--ink);
+  }
+
+  /* ---------- Section heading (h2) ---------- */
+  section {
+    margin-bottom: 44px;
+  }
+  h2 {
+    font-family: var(--sans);
+    font-weight: 600;
+    font-size: 16px;
+    letter-spacing: 0.02em;
+    margin: 0 0 18px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--line);
+    color: var(--ink);
+  }
+
+  /* ---------- Sub heading (h3) ---------- */
+  h3 {
+    font-family: var(--sans);
+    font-weight: 600;
+    font-size: 12.5px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin: 0 0 8px;
+    color: var(--muted);
+  }
+  .subsection + .subsection {
+    margin-top: 22px;
+  }
+
+  p {
+    margin: 0 0 12px;
+    color: var(--ink-soft);
+  }
+  p:last-child { margin-bottom: 0; }
+
+  /* ---------- Summary (報告概要) ---------- */
+  .summary {
+    background: var(--shade);
+    border-left: 3px solid var(--ink);
+    padding: 18px 22px;
+  }
+  .summary p {
+    margin: 0 0 8px;
+    color: var(--ink);
+    line-height: 1.85;
+  }
+  .summary p:last-child { margin-bottom: 0; }
+
+  /* ---------- Bullet list (不具合内容 / 根本原因) ---------- */
+  ul.report-list {
+    list-style: disc;
+    margin: 0;
+    padding-left: 1.4em;
+  }
+  ul.report-list li {
+    padding: 3px 0;
+    color: var(--ink-soft);
+    line-height: 1.75;
+  }
+  ul.report-list li::marker {
+    color: var(--ink);
+  }
+
+  /* ---------- Tables ---------- */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0;
+    font-size: 14px;
+  }
+  table th,
+  table td {
+    text-align: left;
+    padding: 11px 14px;
+    border-bottom: 1px solid var(--line-soft);
+    vertical-align: top;
+    line-height: 1.65;
+  }
+  table thead th {
+    font-weight: 600;
+    font-size: 12.5px;
+    color: var(--muted);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    background: var(--shade);
+    border-bottom: 1.5px solid var(--line);
+    padding: 9px 14px;
+  }
+  table tbody tr:last-child td {
+    border-bottom: 1px solid var(--line);
+  }
+  table td {
+    color: var(--ink-soft);
+  }
+
+  /* Severity / priority indicators (small text mark) */
+  .sev,
+  .priority {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border: 1px solid currentColor;
+    border-radius: var(--radius);
+    display: inline-block;
+    line-height: 1.4;
+    white-space: nowrap;
+  }
+  .sev.wide   { color: var(--accent-critical); }
+  .sev.part   { color: var(--accent-moderate); }
+  .sev.local  { color: var(--accent-minor); }
+
+  .priority.high   { color: var(--accent-critical); }
+  .priority.mid    { color: var(--accent-moderate); }
+  .priority.low    { color: var(--accent-minor); }
+  .priority.review {
+    color: var(--accent-review);
+    background: var(--shade);
+    border-style: dashed;
+  }
+
+  /* Width control for the priority column */
+  td.priority-cell {
+    width: 110px;
+    white-space: nowrap;
+  }
+
+  /* Inline code (使用箇所最小限) */
+  code {
+    font-family: var(--mono);
+    font-size: 12.5px;
+    background: var(--shade);
+    padding: 1px 5px;
+    border-radius: var(--radius);
+    color: var(--ink);
+  }
+
+  /* ---------- Print ---------- */
+  @media print {
+    body {
+      padding: 24px;
+      font-size: 11pt;
+      background: #fff;
+    }
+    .page { max-width: none; }
+    section { page-break-inside: avoid; }
+    h2 { page-break-after: avoid; }
+    .summary { background: transparent; }
+    table thead th { background: transparent; }
+    .priority.review { background: transparent; }
+  }
+</style>
+</head>
+<body>
+
+  <div class="page">
+
+    <header>
+      <div class="report-date">2025-04-14 報告</div>
+      <h1>タスク同期処理におけるリトライ不具合について</h1>
+    </header>
+
+    <!-- 報告概要 -->
+    <section>
+      <h2>報告概要</h2>
+      <div class="summary">
+        <p>タスク同期処理のリトライ実装に不具合あり。一部条件下で多重実行が発生し、データ整合性に影響を与える可能性を確認。</p>
+        <p>本番環境での顕在化はなく、QA環境での再現テストにより検知。</p>
+        <p>暫定対策は実施済み。恒久対応は次スプリント内での着手を予定。</p>
+      </div>
+    </section>
+
+    <!-- 不具合内容 -->
+    <section>
+      <h2>不具合内容</h2>
+
+      <div class="subsection">
+        <h3>対象機能および画面</h3>
+        <ul class="report-list">
+          <li>タスク同期API(<code>/api/v1/sync</code>)</li>
+          <li>クライアントSDK のリトライ制御モジュール(<code>retry-controller</code>)</li>
+          <li>管理画面のタスク一覧ページ(副次的に重複レコードが表示される可能性あり)</li>
+        </ul>
+      </div>
+
+      <div class="subsection">
+        <h3>期待される挙動</h3>
+        <ul class="report-list">
+          <li>リトライは1秒・2秒・4秒の指数バックオフ間隔で実行される</li>
+          <li>多重リクエストは発生せず、サーバー側で重複レコードは生成されない</li>
+          <li>クライアントへは常に整合性の取れたデータのみが返却される</li>
+        </ul>
+      </div>
+
+      <div class="subsection">
+        <h3>実挙動</h3>
+        <ul class="report-list">
+          <li>タスク同期APIが特定のタイムアウトエラーで失敗した際、リトライ処理が指数バックオフを無視して即時実行される</li>
+          <li>結果として最大3回の多重リクエストが発生し、サーバー側で重複レコードが生成される</li>
+          <li>重複レコードはユニーク制約により最終的に1件のみが残るが、中間状態でクライアントへ不整合データが返る可能性あり</li>
+        </ul>
+      </div>
+
+      <div class="subsection">
+        <h3>発生条件</h3>
+        <ul class="report-list">
+          <li>同期処理中にネットワーク断が発生し、500ms以内に復旧した場合のみ再現</li>
+          <li>クライアントSDKバージョン<code>2.4.0</code>以降で発生(<code>2.3.x</code>以前は影響なし)</li>
+          <li>サーバー側の負荷状態には依存しない</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 根本原因 -->
+    <section>
+      <h2>根本原因</h2>
+      <ul class="report-list">
+        <li>リトライ制御モジュールのリファクタリング時に、バックオフ判定の条件分岐が欠落</li>
+        <li>ユニットテストではモックタイマーを使用しており、実時間挙動を検証できていなかった</li>
+        <li>結合テストにネットワーク断の短時間復旧シナリオが含まれていなかった</li>
+      </ul>
+    </section>
+
+    <!-- 影響範囲 -->
+    <section>
+      <h2>影響範囲</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>対象</th>
+            <th>影響</th>
+            <th>度合</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>タスク同期サービス全般</td>
+            <td>リトライ機構が想定外の挙動を示す可能性あり</td>
+            <td><span class="sev wide">横断的</span></td>
+          </tr>
+          <tr>
+            <td>外部APIとの連携機能</td>
+            <td>連携先システムに重複リクエストが届く可能性あり</td>
+            <td><span class="sev part">部分的</span></td>
+          </tr>
+          <tr>
+            <td>QAテスト環境</td>
+            <td>自動テストの一部が不安定化</td>
+            <td><span class="sev local">局所的</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- 暫定対策 -->
+    <section>
+      <h2>暫定対策</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>対策</th>
+            <th>優先度</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>リトライ機構を一時的に無効化し、失敗時はクライアント側での再実行に委ねる</td>
+            <td class="priority-cell"><span class="priority high">高</span></td>
+          </tr>
+          <tr>
+            <td>QA環境において、ネットワーク断シナリオを含む手動テストを毎日実施</td>
+            <td class="priority-cell"><span class="priority mid">中</span></td>
+          </tr>
+          <tr>
+            <td>影響を受ける可能性のある連携先パートナーへ事前共有</td>
+            <td class="priority-cell"><span class="priority mid">中</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- 根本対策 -->
+    <section>
+      <h2>根本対策</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>対策</th>
+            <th>優先度</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>リトライ制御モジュールの条件分岐を修正し、バックオフ判定を復元</td>
+            <td class="priority-cell"><span class="priority high">高</span></td>
+          </tr>
+          <tr>
+            <td>実時間挙動を検証する結合テストを追加し、CIへ組み込み</td>
+            <td class="priority-cell"><span class="priority high">高</span></td>
+          </tr>
+          <tr>
+            <td>ネットワーク断シナリオを含むカオステストの仕組みを整備</td>
+            <td class="priority-cell"><span class="priority mid">中</span></td>
+          </tr>
+          <tr>
+            <td>リファクタリング時のレビュー観点に「制御フローの欠落確認」を追加</td>
+            <td class="priority-cell"><span class="priority low">低</span></td>
+          </tr>
+          <tr>
+            <td>API冪等性キーの全面導入によるリクエスト重複の根本的な無害化</td>
+            <td class="priority-cell"><span class="priority review">要決議</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+  </div>
+
+</body>
+</html>

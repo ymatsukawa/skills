@@ -1,0 +1,411 @@
+<!--
+  ============================================================================
+  Sample: Side-by-side Diff
+  ============================================================================
+  用途:
+    Claude Code の html-output skill が、side-by-side 形式 (before / after を
+    並列に並べる) でコード差分を表示したいときの参照サンプル。
+    関数シグネチャの書き換えや、ブロック構造の入れ替えのように、
+    前後の対応関係を保ったまま読みたい変更に向く。
+
+  含まれるパターン:
+    - 左 (before) / 右 (after) の 2 ペイン構成
+    - 片側にしか存在しない行は反対側を「空行」で埋めて行を対応させる
+    - 行単位の変更色 + 語句単位の部分強調 (.ins / .del)
+    - TypeScript の最小シンタックスハイライト
+    - インラインレビューコメント (Blocking)
+
+  フォント:
+    本文 = Inter + Noto Sans JP
+    コード = JetBrains Mono
+    skill 全体でタイポグラフィを統一する。
+  ============================================================================
+-->
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Code Diff — useOptimisticTasks.ts</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+
+<style>
+  /* --------------------------------------------------------------------------
+     カラートークン
+     unified diff サンプルと同一パレットを使い、skill 内で
+     「差分色」の意味を一貫させる。
+     -------------------------------------------------------------------------- */
+  :root {
+    --color-bg:           #ffffff;
+    --color-bg-subtle:    #f6f8fa;
+    --color-bg-muted:     #eef1f4;
+    --color-border:       #d0d7de;
+    --color-border-muted: #e4e7eb;
+    --color-text:         #1f2328;
+    --color-text-muted:   #57606a;
+    --color-link:         #0969da;
+
+    --color-add-bg:       #e6ffec;
+    --color-add-bg-strong:#abf2bc;
+    --color-add-fg:       #1a7f37;
+    --color-del-bg:       #ffebe9;
+    --color-del-bg-strong:#ffd7d5;
+    --color-del-fg:       #cf222e;
+
+    --color-attn-bg:      #ffebe9;
+    --color-attn-fg:      #cf222e;
+    --color-watch-bg:     #fff8c5;
+    --color-watch-fg:     #9a6700;
+
+    /* シンタックスハイライト (TypeScript) */
+    --tok-keyword:  #cf222e;
+    --tok-string:   #0a3069;
+    --tok-number:   #0550ae;
+    --tok-comment:  #6e7781;
+    --tok-type:     #953800;
+    --tok-fn:       #8250df;
+    --tok-punct:    #24292f;
+
+    --radius: 6px;
+    --radius-sm: 4px;
+
+    --font-sans:
+      "Inter", "Noto Sans JP",
+      -apple-system, BlinkMacSystemFont,
+      "Segoe UI", Roboto, "Helvetica Neue", Arial,
+      sans-serif;
+    --font-mono:
+      "JetBrains Mono",
+      ui-monospace, SFMono-Regular, "SF Mono",
+      Menlo, Consolas, "Liberation Mono",
+      monospace;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 32px 16px;
+    background: var(--color-bg);
+    color: var(--color-text);
+    font-family: var(--font-sans);
+    font-size: 14px;
+    line-height: 1.55;
+    font-feature-settings: "palt";
+  }
+
+  .container { max-width: 1080px; margin: 0 auto; }
+
+  /* --------------------------------------------------------------------------
+     ページヘッダ
+     -------------------------------------------------------------------------- */
+  .page-title {
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0 0 4px;
+  }
+  .page-sub {
+    font-size: 13px;
+    margin: 0 0 28px;
+  }
+
+  /* --------------------------------------------------------------------------
+     セクション見出しと、その差分が発生した理由を添える説明テキスト
+     -------------------------------------------------------------------------- */
+  h2 {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 32px 0 10px;
+  }
+  .h2-desc {
+    font-size: 13px;
+    margin: -4px 0 12px;
+  }
+
+  /* --------------------------------------------------------------------------
+     箇条書きスタイル
+     横に長い説明文を視線で追わずに済むよう、1 トピック 1 行に分割する。
+     bullet は CSS の list-style ではなく "•" 文字を本文中に置く方針なので、
+     list-style: none で標準マーカーは消す。
+     -------------------------------------------------------------------------- */
+  .bullet-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 12px;
+  }
+  .bullet-list li {
+    padding: 1px 0;
+  }
+  /* h2 直下に置く場合は、上方向を詰めて見出しに寄せる */
+  .h2-desc.bullet-list {
+    margin: -4px 0 12px;
+  }
+
+  /* --------------------------------------------------------------------------
+     差分カード (ヘッダ + 差分本体 + コメント)
+     -------------------------------------------------------------------------- */
+  .diff-card {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin-bottom: 24px;
+    background: #fff;
+  }
+  .diff-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    background: var(--color-bg-subtle);
+    border-bottom: 1px solid var(--color-border);
+    font-size: 13px;
+  }
+  .diff-header .filename {
+    font-family: var(--font-mono);
+    font-weight: 500;
+    flex: 1 1 auto;
+    min-width: 0;
+    word-break: break-all;
+  }
+  .diff-header .stat {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--color-text-muted);
+  }
+  .diff-header .stat .added   { color: var(--color-add-fg); font-weight: 600; }
+  .diff-header .stat .removed { color: var(--color-del-fg); font-weight: 600; }
+
+  /* --------------------------------------------------------------------------
+     Side-by-side Diff 本体
+     - 2 列 grid を作り、左を before、右を after に割り当てる
+     - 各ペインは独立スクロール (行が長い場合に備えて overflow-x: auto)
+     - 行の縦位置を左右で揃えるため、片側にしか存在しない変更には
+       反対側に .srow.empty (空の行) を入れて行数を合わせる
+     -------------------------------------------------------------------------- */
+  .split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    line-height: 1.55;
+  }
+  .split > .pane {
+    overflow-x: auto;
+  }
+  .split > .pane.before {
+    border-right: 1px solid var(--color-border);
+  }
+  .split .pane-header {
+    padding: 6px 12px;
+    background: var(--color-bg-muted);
+    border-bottom: 1px solid var(--color-border-muted);
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--color-text-muted);
+  }
+  .srow {
+    display: grid;
+    grid-template-columns: 40px 1fr;
+  }
+  .srow > * {
+    padding: 0 8px;
+    white-space: pre;
+  }
+  .srow .lno {
+    text-align: right;
+    color: var(--color-text-muted);
+    background: var(--color-bg-subtle);
+    user-select: none;
+    border-right: 1px solid var(--color-border-muted);
+  }
+  /* 削除側の行 (before pane でのみ使う想定) */
+  .srow.changed-del { background: var(--color-del-bg); }
+  .srow.changed-del .lno { background: var(--color-del-bg-strong); color: var(--color-del-fg); }
+  /* 追加側の行 (after pane でのみ使う想定) */
+  .srow.changed-add { background: var(--color-add-bg); }
+  .srow.changed-add .lno { background: var(--color-add-bg-strong); color: var(--color-add-fg); }
+  /* 空行: 反対側に変更があるが自分側には対応行がないときに置く */
+  .srow.empty    { background: var(--color-bg-subtle); }
+  .srow.empty .lno { background: var(--color-bg-subtle); color: transparent; }
+
+  /* --------------------------------------------------------------------------
+     インライン (語句単位) の部分強調
+     行単位の色だけでは「行のどこが変わったか」までは伝わらない。
+     .ins / .del を span に当てると、語句単位で差分の核心を示せる。
+     -------------------------------------------------------------------------- */
+  .ins {
+    background: var(--color-add-bg-strong);
+    border-radius: 2px;
+    padding: 0 1px;
+  }
+  .del {
+    background: var(--color-del-bg-strong);
+    border-radius: 2px;
+    padding: 0 1px;
+    text-decoration: line-through;
+    text-decoration-color: rgba(207, 34, 46, 0.6);
+  }
+
+  /* --------------------------------------------------------------------------
+     インラインコメント (unified diff サンプルと共通設計)
+     -------------------------------------------------------------------------- */
+  .inline-comment {
+    margin: 8px 12px 12px;
+    padding: 10px 12px;
+    border-left: 3px solid var(--color-border);
+    background: var(--color-bg-subtle);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    font-size: 13px;
+  }
+  .inline-comment .severity {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 1px 7px;
+    border-radius: 999px;
+    margin-right: 6px;
+    vertical-align: 1px;
+  }
+  .inline-comment .line-ref {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--color-text-muted);
+    margin-right: 8px;
+  }
+  .inline-comment.blocking { border-left-color: var(--color-attn-fg); }
+  .inline-comment.blocking .severity {
+    background: var(--color-attn-bg); color: var(--color-attn-fg);
+  }
+  .inline-comment.nit { border-left-color: var(--color-watch-fg); }
+  .inline-comment.nit .severity {
+    background: var(--color-watch-bg); color: var(--color-watch-fg);
+  }
+  .inline-comment.praise { border-left-color: var(--color-add-fg); }
+  .inline-comment.praise .severity {
+    background: var(--color-add-bg); color: var(--color-add-fg);
+  }
+  .inline-comment code {
+    font-family: var(--font-mono);
+    font-size: 0.9em;
+    background: #fff;
+    padding: 1px 4px;
+    border-radius: 3px;
+    border: 1px solid var(--color-border-muted);
+  }
+
+  /* --------------------------------------------------------------------------
+     シンタックスハイライト用の最小トークンクラス
+     -------------------------------------------------------------------------- */
+  .tok-kw   { color: var(--tok-keyword); font-weight: 500; }
+  .tok-str  { color: var(--tok-string); }
+  .tok-num  { color: var(--tok-number); }
+  .tok-com  { color: var(--tok-comment); font-style: italic; }
+  .tok-typ  { color: var(--tok-type); }
+  .tok-fn   { color: var(--tok-fn); }
+  .tok-pun  { color: var(--tok-punct); }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <h1 class="page-title">Code Diff — useOptimisticTasks.ts</h1>
+  <ul class="page-sub bullet-list">
+    <li>• PR #247「Add optimistic updates to task list mutations」のレビュー指摘を反映するコミット</li>
+    <li>• API 層の関数シグネチャを書き換える変更</li>
+  </ul>
+
+  <!-- ===========================================================
+       差分が発生した理由を端的に示すリード文
+       =========================================================== -->
+  <h2>updateTask の idempotency key を必須引数に昇格</h2>
+  <ul class="h2-desc bullet-list">
+    <li>• これまで <code>updateTask</code> 内部で key を自動生成していた</li>
+    <li>• リトライ時に毎回新しい key が発行され、idempotency が機能しない不具合があった</li>
+    <li>• 呼び出し側で 1 度だけ生成して渡せるよう、引数 1 つから 2 つへシグネチャを変更</li>
+  </ul>
+
+  <article class="diff-card">
+    <div class="diff-header">
+      <span class="filename">src/api/tasks.ts</span>
+      <span class="stat">
+        <span class="added">+7</span>
+        <span class="removed">−2</span>
+      </span>
+    </div>
+
+    <div class="split">
+
+      <!-- before ペイン: 変更前の実装 -->
+      <div class="pane before">
+        <div class="pane-header">before — main</div>
+        <div class="srow"><span class="lno">12</span><span><span class="tok-kw">export</span> <span class="tok-kw">type</span> <span class="tok-typ">TaskPatch</span> = <span class="tok-typ">Partial</span>&lt;<span class="tok-typ">Task</span>&gt; &amp; { id: <span class="tok-typ">string</span> };</span></div>
+        <div class="srow"><span class="lno">13</span><span></span></div>
+        <!-- 旧シグネチャ: 引数 1 つで内部生成 (.del で対応関係を示す) -->
+        <div class="srow changed-del">
+          <span class="lno">14</span>
+          <span><span class="tok-kw">export async function</span> <span class="tok-fn">updateTask</span>(<span class="del">patch: <span class="tok-typ">TaskPatch</span></span>) {</span>
+        </div>
+        <div class="srow changed-del">
+          <span class="lno">15</span>
+          <span>  <span class="tok-kw">return</span> http.<span class="tok-fn">patch</span>(<span class="tok-str">`/tasks/${patch.id}`</span>, patch);</span>
+        </div>
+        <div class="srow"><span class="lno">16</span><span>}</span></div>
+        <!-- 右側に追加された行の対応として、空行で行数を合わせる -->
+        <div class="srow empty"><span class="lno">·</span><span></span></div>
+        <div class="srow empty"><span class="lno">·</span><span></span></div>
+        <div class="srow empty"><span class="lno">·</span><span></span></div>
+      </div>
+
+      <!-- after ペイン: 変更後の実装 -->
+      <div class="pane after">
+        <div class="pane-header">after — mo/optimistic-tasks</div>
+        <div class="srow"><span class="lno">12</span><span><span class="tok-kw">export</span> <span class="tok-kw">type</span> <span class="tok-typ">TaskPatch</span> = <span class="tok-typ">Partial</span>&lt;<span class="tok-typ">Task</span>&gt; &amp; { id: <span class="tok-typ">string</span> };</span></div>
+        <div class="srow"><span class="lno">13</span><span></span></div>
+        <div class="srow changed-add">
+          <span class="lno">14</span>
+          <span><span class="tok-kw">export async function</span> <span class="tok-fn">updateTask</span>(</span>
+        </div>
+        <div class="srow changed-add">
+          <span class="lno">15</span>
+          <span>  patch: <span class="tok-typ">TaskPatch</span>,</span>
+        </div>
+        <!-- 引数追加の本質を語句単位 (.ins) で強調する -->
+        <div class="srow changed-add">
+          <span class="lno">16</span>
+          <span>  <span class="ins">key: <span class="tok-typ">string</span></span>,</span>
+        </div>
+        <div class="srow changed-add">
+          <span class="lno">17</span>
+          <span>) {</span>
+        </div>
+        <div class="srow changed-add">
+          <span class="lno">18</span>
+          <span>  <span class="tok-kw">return</span> http.<span class="tok-fn">patch</span>(<span class="tok-str">`/tasks/${patch.id}`</span>, patch, {</span>
+        </div>
+        <div class="srow changed-add">
+          <span class="lno">19</span>
+          <span>    headers: { <span class="tok-str">'Idempotency-Key'</span>: key },</span>
+        </div>
+        <div class="srow changed-add">
+          <span class="lno">20</span>
+          <span>  });</span>
+        </div>
+        <div class="srow"><span class="lno">21</span><span>}</span></div>
+      </div>
+    </div>
+
+    <div class="inline-comment blocking">
+      <span class="line-ref">after line 16</span>
+      <span class="severity">Blocking</span>
+      <code>key</code> を必須引数にしたのは正しい。ただし呼び出し側 (<code>useOptimisticTasks</code> の <code>onMutate</code>) で 1 度だけ生成して引き回す必要があり、リトライ時に同じ key が使われるかを必ず確認すること。
+    </div>
+  </article>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,427 @@
+<!--
+  ============================================================================
+  Sample: Unified Diff
+  ============================================================================
+  用途:
+    Claude Code の html-output skill が、unified diff (Git 標準と同じ
+    1 列形式) でコード差分を表示したいときの参照サンプル。
+    時系列順に削除行 → 追加行が並ぶため、変更の流れを 1 本の視線で
+    追える。小さな変更や、コミット履歴的に読みたいときに適する。
+
+  含まれるパターン:
+    - 行番号 2 列 (旧 / 新) + マーカー列 + コード列の 4 列構成
+    - hunk header (@@ ... @@) の専用配色
+    - 追加 (+) / 削除 (-) / コンテキストの 3 状態
+    - TypeScript の最小シンタックスハイライト (span + class のみ)
+    - インラインレビューコメント (Praise / Nit / Blocking)
+
+  フォント:
+    本文 = Inter + Noto Sans JP
+    コード = JetBrains Mono
+    skill 全体でタイポグラフィを統一する。
+  ============================================================================
+-->
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Code Diff — useOptimisticTasks.ts</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+
+<style>
+  /* --------------------------------------------------------------------------
+     カラートークン
+     PR サマリーと共通のパレット。GitHub のライトテーマに準拠した
+     コントラスト設計で、追加/削除/中立の 3 階層を明確に分ける。
+     -------------------------------------------------------------------------- */
+  :root {
+    --color-bg:           #ffffff;
+    --color-bg-subtle:    #f6f8fa;
+    --color-border:       #d0d7de;
+    --color-border-muted: #e4e7eb;
+    --color-text:         #1f2328;
+    --color-text-muted:   #57606a;
+    --color-link:         #0969da;
+
+    --color-add-bg:       #e6ffec;
+    --color-add-bg-strong:#abf2bc;
+    --color-add-fg:       #1a7f37;
+    --color-del-bg:       #ffebe9;
+    --color-del-bg-strong:#ffd7d5;
+    --color-del-fg:       #cf222e;
+
+    --color-attn-bg:      #ffebe9;
+    --color-attn-fg:      #cf222e;
+    --color-watch-bg:     #fff8c5;
+    --color-watch-fg:     #9a6700;
+
+    /* シンタックスハイライト (TypeScript) */
+    --tok-keyword:  #cf222e;
+    --tok-string:   #0a3069;
+    --tok-number:   #0550ae;
+    --tok-comment:  #6e7781;
+    --tok-type:     #953800;
+    --tok-fn:       #8250df;
+    --tok-punct:    #24292f;
+
+    --radius: 6px;
+    --radius-sm: 4px;
+
+    --font-sans:
+      "Inter", "Noto Sans JP",
+      -apple-system, BlinkMacSystemFont,
+      "Segoe UI", Roboto, "Helvetica Neue", Arial,
+      sans-serif;
+    --font-mono:
+      "JetBrains Mono",
+      ui-monospace, SFMono-Regular, "SF Mono",
+      Menlo, Consolas, "Liberation Mono",
+      monospace;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 32px 16px;
+    background: var(--color-bg);
+    color: var(--color-text);
+    font-family: var(--font-sans);
+    font-size: 14px;
+    line-height: 1.55;
+    font-feature-settings: "palt";
+  }
+
+  .container { max-width: 1080px; margin: 0 auto; }
+
+  /* --------------------------------------------------------------------------
+     ページヘッダ
+     ファイル単位の差分閲覧画面を想定したシンプルなタイトル構造。
+     -------------------------------------------------------------------------- */
+  .page-title {
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0 0 4px;
+  }
+  .page-sub {
+    font-size: 13px;
+    margin: 0 0 28px;
+  }
+
+  /* --------------------------------------------------------------------------
+     セクション見出しと、その差分が発生した理由を添える説明テキスト
+     -------------------------------------------------------------------------- */
+  h2 {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 32px 0 10px;
+  }
+  .h2-desc {
+    font-size: 13px;
+    margin: -4px 0 12px;
+  }
+
+  /* --------------------------------------------------------------------------
+     箇条書きスタイル
+     横に長い説明文を視線で追わずに済むよう、1 トピック 1 行に分割する。
+     bullet は CSS の list-style ではなく "•" 文字を本文中に置く方針なので、
+     list-style: none で標準マーカーは消す。
+     -------------------------------------------------------------------------- */
+  .bullet-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 12px;
+  }
+  .bullet-list li {
+    padding: 1px 0;
+  }
+  /* h2 直下に置く場合は、上方向を詰めて見出しに寄せる */
+  .h2-desc.bullet-list {
+    margin: -4px 0 12px;
+  }
+
+  /* --------------------------------------------------------------------------
+     差分カード (ヘッダ + 差分本体 + コメントを内包する枠)
+     -------------------------------------------------------------------------- */
+  .diff-card {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin-bottom: 24px;
+    background: #fff;
+  }
+  .diff-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    background: var(--color-bg-subtle);
+    border-bottom: 1px solid var(--color-border);
+    font-size: 13px;
+  }
+  .diff-header .filename {
+    font-family: var(--font-mono);
+    font-weight: 500;
+    flex: 1 1 auto;
+    min-width: 0;
+    word-break: break-all;
+  }
+  .diff-header .stat {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--color-text-muted);
+  }
+  .diff-header .stat .added   { color: var(--color-add-fg); font-weight: 600; }
+  .diff-header .stat .removed { color: var(--color-del-fg); font-weight: 600; }
+
+  /* --------------------------------------------------------------------------
+     Unified Diff 本体
+     - 4 列: 旧行番号 / 新行番号 / マーカー / コード
+     - 旧版にしか存在しない行 (削除) は新行番号を空にする
+     - 新版にしか存在しない行 (追加) は旧行番号を空にする
+     - これで「旧コードを読むときは左、新コードを読むときは右」と
+       視線を切り替えられる。
+     -------------------------------------------------------------------------- */
+  .unified {
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    line-height: 1.55;
+    overflow-x: auto;
+  }
+  .urow {
+    display: grid;
+    grid-template-columns: 44px 44px 24px 1fr;
+  }
+  .urow > * {
+    padding: 0 8px;
+    white-space: pre;
+  }
+  .urow .lno-old,
+  .urow .lno-new {
+    text-align: right;
+    color: var(--color-text-muted);
+    background: var(--color-bg-subtle);
+    user-select: none;
+    border-right: 1px solid var(--color-border-muted);
+  }
+  .urow .marker {
+    text-align: center;
+    color: var(--color-text-muted);
+    user-select: none;
+  }
+  /* 追加行: 緑系。新行番号セルを濃く塗って「この行は新版のみに存在」を強調 */
+  .urow.add    { background: var(--color-add-bg); }
+  .urow.add    .marker  { color: var(--color-add-fg); }
+  .urow.add    .lno-new { background: var(--color-add-bg-strong); color: var(--color-add-fg); }
+  /* 削除行: 赤系。旧行番号セルを濃く塗って「この行は旧版のみに存在」を強調 */
+  .urow.remove { background: var(--color-del-bg); }
+  .urow.remove .marker  { color: var(--color-del-fg); }
+  .urow.remove .lno-old { background: var(--color-del-bg-strong); color: var(--color-del-fg); }
+  /* hunk header: コードのどの位置の塊かを示す。視覚的にセクション区切りとして機能 */
+  .urow.hunk {
+    background: #ddf4ff;
+    color: var(--color-link);
+  }
+  .urow.hunk > * { background: #ddf4ff; }
+
+  /* --------------------------------------------------------------------------
+     インラインコメント
+     diff の文脈に紐づくレビュー指摘。severity で色とラベルを切り替える。
+     -------------------------------------------------------------------------- */
+  .inline-comment {
+    margin: 8px 12px 12px;
+    padding: 10px 12px;
+    border-left: 3px solid var(--color-border);
+    background: var(--color-bg-subtle);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    font-size: 13px;
+  }
+  .inline-comment .severity {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 1px 7px;
+    border-radius: 999px;
+    margin-right: 6px;
+    vertical-align: 1px;
+  }
+  .inline-comment .line-ref {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--color-text-muted);
+    margin-right: 8px;
+  }
+  .inline-comment.blocking { border-left-color: var(--color-attn-fg); }
+  .inline-comment.blocking .severity {
+    background: var(--color-attn-bg); color: var(--color-attn-fg);
+  }
+  .inline-comment.nit { border-left-color: var(--color-watch-fg); }
+  .inline-comment.nit .severity {
+    background: var(--color-watch-bg); color: var(--color-watch-fg);
+  }
+  .inline-comment.praise { border-left-color: var(--color-add-fg); }
+  .inline-comment.praise .severity {
+    background: var(--color-add-bg); color: var(--color-add-fg);
+  }
+  .inline-comment code {
+    font-family: var(--font-mono);
+    font-size: 0.9em;
+    background: #fff;
+    padding: 1px 4px;
+    border-radius: 3px;
+    border: 1px solid var(--color-border-muted);
+  }
+
+  /* --------------------------------------------------------------------------
+     シンタックスハイライト用の最小トークンクラス
+     ハイライトライブラリを使わず span に class を当てるだけで実現できる。
+     references として「最小実装の見本」を示すのが目的。
+     -------------------------------------------------------------------------- */
+  .tok-kw   { color: var(--tok-keyword); font-weight: 500; }
+  .tok-str  { color: var(--tok-string); }
+  .tok-num  { color: var(--tok-number); }
+  .tok-com  { color: var(--tok-comment); font-style: italic; }
+  .tok-typ  { color: var(--tok-type); }
+  .tok-fn   { color: var(--tok-fn); }
+  .tok-pun  { color: var(--tok-punct); }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <h1 class="page-title">Code Diff — useOptimisticTasks.ts</h1>
+  <ul class="page-sub bullet-list">
+    <li>• PR #247「Add optimistic updates to task list mutations」のレビューで指摘された不具合の修正コミット</li>
+    <li>• 楽観的更新まわりの race condition を解消することが目的</li>
+  </ul>
+
+  <!-- ===========================================================
+       差分が発生した理由を端的に示すリード文
+       (「なぜこの差分が生まれたか」を読者が即座に理解できるようにする)
+       =========================================================== -->
+  <h2>onMutate のレースコンディションを修正</h2>
+  <ul class="h2-desc bullet-list">
+    <li>• 楽観的更新の直後に refetch が走ると、楽観的書き込みが上書きされて UI がちらつく</li>
+    <li>• 書き込み前に <code>cancelQueries</code> を呼んで、進行中の refetch を停止するよう変更</li>
+    <li>• あわせて idempotency key をミューテーション側で 1 度だけ生成する形に統一</li>
+  </ul>
+
+  <article class="diff-card">
+    <div class="diff-header">
+      <span class="filename">src/hooks/useOptimisticTasks.ts</span>
+      <span class="stat">
+        <span class="added">+12</span>
+        <span class="removed">−4</span>
+      </span>
+    </div>
+
+    <div class="unified">
+
+      <!-- hunk header: 旧版 8 行目あたりから、新版 8 行目あたりまでの塊 -->
+      <div class="urow hunk">
+        <span class="lno-old"></span>
+        <span class="lno-new"></span>
+        <span class="marker"></span>
+        <span>@@ -8,12 +8,20 @@ <span class="tok-kw">export function</span> <span class="tok-fn">useOptimisticTasks</span>(boardId: <span class="tok-typ">string</span>)</span>
+      </div>
+
+      <!-- 変更されていないコンテキスト行 (前後の見当をつけるため必須) -->
+      <div class="urow">
+        <span class="lno-old">8</span><span class="lno-new">8</span>
+        <span class="marker"> </span>
+        <span>  <span class="tok-kw">return</span> <span class="tok-fn">useMutation</span>({</span>
+      </div>
+      <div class="urow">
+        <span class="lno-old">9</span><span class="lno-new">9</span>
+        <span class="marker"> </span>
+        <span>    mutationFn: (patch: <span class="tok-typ">TaskPatch</span>) =&gt; <span class="tok-fn">updateTask</span>(patch),</span>
+      </div>
+
+      <!-- 旧実装: cancelQueries なしでいきなり setQueryData していた -->
+      <div class="urow remove">
+        <span class="lno-old">10</span><span class="lno-new"></span>
+        <span class="marker">−</span>
+        <span>    onMutate: <span class="tok-kw">async</span> (patch) =&gt; {</span>
+      </div>
+      <div class="urow remove">
+        <span class="lno-old">11</span><span class="lno-new"></span>
+        <span class="marker">−</span>
+        <span>      <span class="tok-kw">const</span> prev = qc.<span class="tok-fn">getQueryData</span>&lt;<span class="tok-typ">Task</span>[]&gt;(key);</span>
+      </div>
+      <div class="urow remove">
+        <span class="lno-old">12</span><span class="lno-new"></span>
+        <span class="marker">−</span>
+        <span>      qc.<span class="tok-fn">setQueryData</span>(key, optimistic(patch));</span>
+      </div>
+      <div class="urow remove">
+        <span class="lno-old">13</span><span class="lno-new"></span>
+        <span class="marker">−</span>
+        <span>      <span class="tok-kw">return</span> { prev };</span>
+      </div>
+
+      <!-- 新実装: cancelQueries で進行中の refetch を止めてから書き込む -->
+      <div class="urow add">
+        <span class="lno-old"></span><span class="lno-new">10</span>
+        <span class="marker">+</span>
+        <span>    onMutate: <span class="tok-kw">async</span> (patch) =&gt; {</span>
+      </div>
+      <div class="urow add">
+        <span class="lno-old"></span><span class="lno-new">11</span>
+        <span class="marker">+</span>
+        <span>      <span class="tok-com">// race condition を避けるため進行中の refetch を停止する</span></span>
+      </div>
+      <div class="urow add">
+        <span class="lno-old"></span><span class="lno-new">12</span>
+        <span class="marker">+</span>
+        <span>      <span class="tok-kw">await</span> qc.<span class="tok-fn">cancelQueries</span>({ queryKey: key });</span>
+      </div>
+      <div class="urow add">
+        <span class="lno-old"></span><span class="lno-new">13</span>
+        <span class="marker">+</span>
+        <span>      <span class="tok-kw">const</span> prev = qc.<span class="tok-fn">getQueryData</span>&lt;<span class="tok-typ">Task</span>[]&gt;(key);</span>
+      </div>
+      <div class="urow add">
+        <span class="lno-old"></span><span class="lno-new">14</span>
+        <span class="marker">+</span>
+        <span>      qc.<span class="tok-fn">setQueryData</span>(key, optimistic(patch));</span>
+      </div>
+      <div class="urow add">
+        <span class="lno-old"></span><span class="lno-new">15</span>
+        <span class="marker">+</span>
+        <span>      <span class="tok-kw">return</span> { prev, key: <span class="tok-fn">crypto</span>.<span class="tok-fn">randomUUID</span>() };</span>
+      </div>
+
+      <!-- 末尾のコンテキスト行 -->
+      <div class="urow">
+        <span class="lno-old">14</span><span class="lno-new">16</span>
+        <span class="marker"> </span>
+        <span>    },</span>
+      </div>
+      <div class="urow">
+        <span class="lno-old">15</span><span class="lno-new">17</span>
+        <span class="marker"> </span>
+        <span>  });</span>
+      </div>
+    </div>
+
+    <!-- 差分カードに紐づくインラインレビュー -->
+    <div class="inline-comment praise">
+      <span class="line-ref">line 12</span>
+      <span class="severity">Praise</span>
+      <code>cancelQueries</code> の追加でレースコンディションが解消された。コメントで意図も書かれていて読みやすい。
+    </div>
+    <div class="inline-comment nit">
+      <span class="line-ref">line 15</span>
+      <span class="severity">Nit</span>
+      idempotency key を <code>onMutate</code> で生成するようになったのは良い。ただ <code>prev</code> と並べるなら、戻り値の型を明示するとさらに親切。
+    </div>
+  </article>
+
+</div>
+
+</body>
+</html>
