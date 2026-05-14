@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>作業依頼: A 社向け請求 CSV フォーマット変更の CS / Sales / dev 連携対応</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --paper:       #FFFFFF;
+      --ink:         #1A1A1A;
+      --ink-soft:    #4A4A4A;
+      --ink-mute:    #767676;
+      --rule:        #E5E5E5;
+      --rule-strong: #1A1A1A;
+      --tint:        #F7F7F5;
+      --tint-soft:   #FBFBFA;
+
+      --sev-high-bg:  #FBE9E2;
+      --sev-high-fg:  #8A3B1E;
+      --sev-mid-bg:   #F4ECDA;
+      --sev-mid-fg:   #6B5320;
+      --sev-low-bg:   #E8EEDF;
+      --sev-low-fg:   #4B5C39;
+
+      /* role color (CS / Sales / dev) — 過剰に強調せず薄いタグ色で識別 */
+      --role-cs-bg:    #EAEEF6;
+      --role-cs-fg:    #2A3C66;
+      --role-sales-bg: #F1ECDF;
+      --role-sales-fg: #6B5320;
+      --role-dev-bg:   #E5EEE4;
+      --role-dev-fg:   #2F5236;
+
+      --sans: 'Inter', 'Noto Sans JP', system-ui, -apple-system, sans-serif;
+      --mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { -webkit-text-size-adjust: 100%; }
+
+    body {
+      font-family: var(--sans);
+      font-feature-settings: "palt" 1;
+      background: var(--paper);
+      color: var(--ink);
+      line-height: 1.7;
+      font-size: 15px;
+      padding: 64px 32px 120px;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    .page { max-width: 880px; margin: 0 auto; }
+
+    .doc-head {
+      border-bottom: 2px solid var(--rule-strong);
+      padding-bottom: 28px;
+      margin-bottom: 48px;
+    }
+    h1 {
+      font-family: var(--sans);
+      font-weight: 700;
+      font-size: 28px;
+      line-height: 1.35;
+      color: var(--ink);
+      letter-spacing: -0.01em;
+    }
+    .doc-meta {
+      display: flex;
+      gap: 18px;
+      margin-top: 14px;
+      font-family: var(--mono);
+      font-size: 11.5px;
+      color: var(--ink-mute);
+      letter-spacing: 0.02em;
+      flex-wrap: wrap;
+    }
+    .doc-meta .label { color: var(--ink-mute); }
+    .doc-meta .val { color: var(--ink); margin-left: 4px; }
+
+    section { margin-bottom: 56px; }
+
+    h2 {
+      font-family: var(--sans);
+      font-weight: 600;
+      font-size: 20px;
+      color: var(--ink);
+      letter-spacing: -0.005em;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--rule-strong);
+      margin-bottom: 24px;
+    }
+    h3 {
+      font-family: var(--sans);
+      font-weight: 600;
+      font-size: 13px;
+      color: var(--ink);
+      margin-top: 28px;
+      margin-bottom: 12px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      padding-left: 10px;
+      border-left: 3px solid var(--ink);
+    }
+    h3:first-child { margin-top: 0; }
+
+    p { font-size: 14.5px; color: var(--ink); line-height: 1.7; }
+    p + p { margin-top: 10px; }
+
+    /* ---------- task list ---------- */
+    .task-list { list-style: none; }
+    .task-list > li {
+      display: flex;
+      align-items: flex-start;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--rule);
+      gap: 12px;
+    }
+    .task-list > li:last-child { border-bottom: none; }
+    .task-list .task-body {
+      font-size: 14.5px;
+      color: var(--ink);
+      line-height: 1.65;
+      flex: 1;
+    }
+    .task-list .tag {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--ink);
+      white-space: nowrap;
+      padding: 3px 9px;
+      background: var(--paper);
+      border: 1px dashed var(--rule);
+      border-radius: 4px;
+      letter-spacing: 0.01em;
+      flex-shrink: 0;
+      font-weight: 500;
+    }
+    .task-list .tag.fixed   { background: #EEF4EA; border-style: solid; border-color: #C7D6BC; color: #3F5A28; }
+    .task-list .tag.pending { background: #FBF1E2; border-style: solid; border-color: #E6CFA1; color: #6B4B16; }
+
+    /* ---------- role badge (CS / Sales / dev) ---------- */
+    .role {
+      display: inline-block;
+      font-family: var(--mono);
+      font-size: 10.5px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 4px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .role.cs    { background: var(--role-cs-bg);    color: var(--role-cs-fg); }
+    .role.sales { background: var(--role-sales-bg); color: var(--role-sales-fg); }
+    .role.dev   { background: var(--role-dev-bg);   color: var(--role-dev-fg); }
+
+    .note {
+      display: inline-block;
+      margin-top: 4px;
+      font-size: 13px;
+      color: var(--ink-mute);
+      line-height: 1.6;
+    }
+
+    code {
+      font-family: var(--mono);
+      font-size: 0.88em;
+      background: var(--tint);
+      padding: 1px 6px;
+      border-radius: 3px;
+      color: var(--ink);
+    }
+    strong { font-weight: 600; color: var(--ink); }
+    em { font-style: normal; color: var(--ink-mute); font-size: 0.92em; }
+
+    /* ---------- 手順 (ordered, role-tagged) ---------- */
+    .steps {
+      list-style: none;
+      counter-reset: step;
+    }
+    .steps > li {
+      counter-increment: step;
+      display: grid;
+      grid-template-columns: 36px 70px 1fr;
+      gap: 14px;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--rule);
+      align-items: flex-start;
+    }
+    .steps > li:last-child { border-bottom: none; }
+    .steps > li::before {
+      content: counter(step, decimal-leading-zero);
+      font-family: var(--mono);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--ink-mute);
+      padding-top: 4px;
+      letter-spacing: 0.04em;
+    }
+    .steps .role { margin-top: 4px; }
+    .steps .step-body {
+      font-size: 14.5px;
+      color: var(--ink);
+      line-height: 1.65;
+    }
+    .steps .step-body .step-title {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .steps .step-body .step-note {
+      display: block;
+      font-size: 13px;
+      color: var(--ink-mute);
+      margin-top: 4px;
+    }
+
+    /* ---------- 報告先テーブル ---------- */
+    .report-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13.5px;
+      border: 1px solid var(--rule);
+      table-layout: fixed;
+    }
+    .report-table thead th {
+      font-family: var(--sans);
+      font-weight: 600;
+      font-size: 12px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--ink);
+      text-align: left;
+      padding: 12px 14px;
+      background: var(--tint);
+      border-bottom: 1.5px solid var(--rule-strong);
+    }
+    .report-table tbody td {
+      padding: 14px;
+      border-top: 1px solid var(--rule);
+      vertical-align: top;
+      color: var(--ink-soft);
+      line-height: 1.6;
+    }
+    .report-table tbody tr:nth-child(even) td { background: var(--tint-soft); }
+    .report-table .col-trigger  { width: 30%; }
+    .report-table .col-to       { width: 22%; }
+    .report-table .col-channel  { width: 18%; }
+    .report-table .col-when     { width: 30%; }
+
+    /* ---------- risk table ---------- */
+    .risk-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13.5px;
+      border: 1px solid var(--rule);
+      table-layout: fixed;
+    }
+    .risk-table thead th {
+      font-family: var(--sans);
+      font-weight: 600;
+      font-size: 12px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--ink);
+      text-align: left;
+      padding: 12px 14px;
+      background: var(--tint);
+      border-bottom: 1.5px solid var(--rule-strong);
+      vertical-align: bottom;
+    }
+    .risk-table tbody td {
+      padding: 14px;
+      border-top: 1px solid var(--rule);
+      vertical-align: top;
+      color: var(--ink-soft);
+      line-height: 1.6;
+    }
+    .risk-table tbody tr:nth-child(even) td { background: var(--tint-soft); }
+    .risk-table tbody td.col-risk-cell { color: var(--ink); font-weight: 500; }
+    .risk-table .col-risk     { width: 26%; }
+    .risk-table .col-sev      { width: 10%; }
+    .risk-table .col-cause    { width: 22%; }
+    .risk-table .col-action   { width: 28%; }
+    .risk-table .col-owner    { width: 14%; }
+
+    .sev {
+      display: inline-block;
+      font-family: var(--mono);
+      font-size: 10.5px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 4px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .sev.high { background: var(--sev-high-bg); color: var(--sev-high-fg); }
+    .sev.mid  { background: var(--sev-mid-bg);  color: var(--sev-mid-fg); }
+    .sev.low  { background: var(--sev-low-bg);  color: var(--sev-low-fg); }
+
+    /* ---------- 参照先 ---------- */
+    .ref-list { list-style: none; }
+    .ref-list > li {
+      padding: 10px 0;
+      border-bottom: 1px solid var(--rule);
+      display: flex;
+      gap: 14px;
+      align-items: baseline;
+      font-size: 14px;
+      flex-wrap: wrap;
+    }
+    .ref-list > li:last-child { border-bottom: none; }
+    .ref-list .ref-kind {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--ink-mute);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      flex-shrink: 0;
+      width: 80px;
+    }
+    .ref-list .ref-target {
+      font-family: var(--mono);
+      font-size: 12.5px;
+      color: var(--ink);
+    }
+    .ref-list .ref-note { color: var(--ink-soft); font-size: 13.5px; flex: 1; min-width: 0; }
+
+    /* ---------- responsive ---------- */
+    @media (max-width: 720px) {
+      body { padding: 40px 20px 80px; font-size: 14px; }
+      h1 { font-size: 22px; }
+      h2 { font-size: 17px; }
+
+      .steps > li {
+        grid-template-columns: 28px 1fr;
+      }
+      .steps > li .role {
+        grid-column: 1 / -1;
+        margin-left: 28px;
+        align-self: flex-start;
+      }
+
+      .report-table thead, .risk-table thead { display: none; }
+      .report-table, .report-table tbody, .report-table tr, .report-table td,
+      .risk-table, .risk-table tbody, .risk-table tr, .risk-table td {
+        display: block; width: 100%;
+      }
+      .report-table tr, .risk-table tr {
+        border-top: 1px solid var(--rule);
+        padding: 10px 0;
+      }
+      .report-table tbody tr:nth-child(even) td,
+      .risk-table tbody tr:nth-child(even) td { background: transparent; }
+      .report-table tbody td, .risk-table tbody td {
+        border-top: none;
+        padding: 4px 0;
+      }
+      .report-table tbody td::before, .risk-table tbody td::before {
+        content: attr(data-label);
+        display: inline-block;
+        width: 90px;
+        font-family: var(--mono);
+        font-size: 11px;
+        text-transform: uppercase;
+        color: var(--ink-mute);
+        letter-spacing: 0.04em;
+      }
+    }
+
+    @media print {
+      body { padding: 24mm 18mm; font-size: 11pt; background: #FFFFFF; }
+      .page { max-width: none; }
+      h1 { font-size: 20pt; }
+      h2 { font-size: 13pt; }
+      section { margin-bottom: 28px; page-break-inside: avoid; }
+      .steps > li, .report-table, .risk-table { page-break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+
+    <!-- ============================================================== -->
+    <!-- DOC HEADER                                                      -->
+    <!-- ============================================================== -->
+    <header class="doc-head">
+      <h1>作業依頼: A 社向け請求 CSV フォーマット変更の CS / Sales / dev 連携対応</h1>
+    </header>
+
+    <!-- ============================================================== -->
+    <!-- やりたいこと                                                    -->
+    <!-- ============================================================== -->
+    <section>
+      <h2>やりたいこと</h2>
+      <ul class="task-list">
+        <li>
+          <span class="task-body">A 社が経理 SaaS への取り込みに使用している「月次請求 CSV」のフォーマットを、A 社の指定スキーマに合わせて切り替え可能にする</span>
+        </li>
+        <li>
+          <span class="task-body">CS / Sales / dev の 3 部署で対応分担を明確化し、A 社への一次回答までを <strong>5 営業日以内</strong>で完了させる</span>
+        </li>
+        <li>
+          <span class="task-body">対応合意までのコミュニケーションログを <code>#cs-a-company</code> Slack チャンネルに集約し、CS / Sales / dev 全員が同じ情報源を参照できる状態にする</span>
+        </li>
+      </ul>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- なぜやるか                                                      -->
+    <!-- ============================================================== -->
+    <section>
+      <h2>なぜやるか</h2>
+      <ul class="task-list">
+        <li>
+          <span class="task-body">A 社は年額 ARR 上位 10 社に入る大口顧客で、本要望の遅延は次回更新時 (2026-09) の継続判断に影響する</span>
+        </li>
+        <li>
+          <span class="task-body">過去にも CS が拾った要望が Sales 経由で dev に渡らず、A 社側で 2 週間放置された事例があるため、今回は最初から 3 部署を巻き込んだフローで対応する</span>
+        </li>
+        <li>
+          <span class="task-body">同種の要望 (CSV カラム変更) は B 社・C 社からも上がっており、本対応をテンプレ化して横展開できる状態にしておきたい</span>
+        </li>
+      </ul>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- 実施事項: 概要                                                  -->
+    <!-- ============================================================== -->
+    <section>
+      <h2>実施事項: 概要</h2>
+
+      <h3>前提条件</h3>
+      <ul class="task-list">
+        <li>
+          <span class="task-body">A 社の契約上、フォーマット個別対応の SLA は定義されていない。今回はベストエフォートだが、5 営業日以内の一次回答を社内目標とする</span>
+        </li>
+        <li>
+          <span class="task-body">既存 CSV 出力は全顧客共通のフォーマットで稼働しており、A 社のためだけにグローバル変更は行わない</span>
+        </li>
+        <li>
+          <span class="task-body">本対応の起点は CS 経由の問い合わせ (Zendesk Ticket #4821)。元の要望文・添付サンプルは Zendesk 内が一次情報</span>
+        </li>
+      </ul>
+
+      <h3>確定</h3>
+      <ul class="task-list">
+        <li>
+          <span class="task-body">対応方針は「テナント単位でフォーマット切替できる仕組みを dev が用意し、A 社のみ新フォーマットに切り替える」</span>
+        </li>
+        <li>
+          <span class="task-body">CS の窓口は山田、Sales の主担当は鈴木、dev 側 PM は佐藤</span>
+        </li>
+        <li>
+          <span class="task-body">A 社への一次回答期限は <strong>2026-05-21 (木)</strong> 17:00</span>
+        </li>
+        <li>
+          <span class="task-body">対応に伴う追加費用は請求しない (関係性維持を優先)。営業上の判断は鈴木が決裁済み</span>
+        </li>
+      </ul>
+
+      <h3>未決</h3>
+      <ul class="task-list">
+        <li>
+          <span class="task-body">新フォーマットに含める「税区分カラム」の値を、A 社の経理 SaaS が要求する 4 値で出すか、汎用の 2 値 + 注釈で出すか<br><span class="note">A 社経理担当へのヒアリング待ち。CS 山田から 2026-05-15 (水) 中に追加質問する予定。</span></span>
+        </li>
+        <li>
+          <span class="task-body">本機能を A 社の隣接顧客 (同業他社の B 社・C 社) に同条件で開放するか、A 社限定とするか</span>
+        </li>
+        <li>
+          <span class="task-body">リリース予定日。dev チームの来週スプリント余力を見て確定 (5/20 のスプリントプランで判断)</span>
+        </li>
+      </ul>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- 実施事項: 詳細                                                  -->
+    <!-- ============================================================== -->
+    <section>
+      <h2>実施事項: 詳細</h2>
+
+      <h3>手順</h3>
+      <ol class="steps">
+        <li>
+          <span class="role cs">CS</span>
+          <span class="step-body">
+            <span class="step-title">問い合わせ内容の整理と要件構造化</span>
+            Zendesk Ticket #4821 を起票。A 社からの要望文・添付サンプル CSV を、社内ヒアリングシート (Notion: <code>requests/2026-05-a-company</code>) に転記し、「現状」「希望」「期限」の 3 項目に整理する。
+            <span class="step-note">期限: 2026-05-15 (水) 12:00 / 担当: 山田 (CS)</span>
+          </span>
+        </li>
+        <li>
+          <span class="role cs">CS</span>
+          <span class="step-body">
+            <span class="step-title">Sales へのハンドオフ会</span>
+            鈴木 (Sales) と 30 分の同期会を設定。要望の背景 (A 社の経理 SaaS 切替) と、契約面の影響範囲を引き継ぐ。会の結論を <code>#cs-a-company</code> に投稿する。
+            <span class="step-note">期限: 2026-05-15 (水) 17:00 / 担当: 山田 (CS) → 鈴木 (Sales)</span>
+          </span>
+        </li>
+        <li>
+          <span class="role sales">SALES</span>
+          <span class="step-body">
+            <span class="step-title">商務面の確認と A 社合意の取り付け</span>
+            A 社窓口 (経理部 田辺氏) と 1on1。追加費用なし・フォーマット切替方式での対応合意を口頭で取り、議事録を Salesforce 商談オブジェクトに保存。税区分カラムの仕様も同席で確認する。
+            <span class="step-note">期限: 2026-05-18 (月) 中 / 担当: 鈴木 (Sales)</span>
+          </span>
+        </li>
+        <li>
+          <span class="role sales">SALES</span>
+          <span class="step-body">
+            <span class="step-title">dev チームへの要件提出</span>
+            合意後に <code>request-software-mvc.html</code> 相当の依頼書テンプレートを使い、dev チームの起票キュー (Linear: <code>BILL-*</code>) にチケットを切る。「切替可能なフォーマット」「テナント単位での切替方法」の 2 点を明示する。
+            <span class="step-note">期限: 2026-05-19 (火) 10:00 / 担当: 鈴木 (Sales) → 佐藤 (dev PM)</span>
+          </span>
+        </li>
+        <li>
+          <span class="role dev">DEV</span>
+          <span class="step-body">
+            <span class="step-title">実装方針の見積もりと一次回答</span>
+            佐藤 (dev PM) が起票チケットを受領し、設計案 (テナント設定キー <code>billing.csv_format</code> による切替) と工数見積を 24 時間以内に返す。設計案は Notion <code>design/billing-csv-format-switch</code> に置く。
+            <span class="step-note">期限: 2026-05-20 (水) 10:00 / 担当: 佐藤 (dev PM)</span>
+          </span>
+        </li>
+        <li>
+          <span class="role cs">CS</span>
+          <span class="step-body">
+            <span class="step-title">A 社への一次回答</span>
+            山田 (CS) が dev 側の設計案・想定リリース時期を取りまとめ、A 社へメール返信。Salesforce にも一次回答済みステータスを記録。
+            <span class="step-note">期限: 2026-05-21 (木) 17:00 / 担当: 山田 (CS)</span>
+          </span>
+        </li>
+        <li>
+          <span class="role dev">DEV</span>
+          <span class="step-body">
+            <span class="step-title">実装・QA・段階リリース</span>
+            別途 dev チーム内のスプリントで実装。テナント切替フラグを A 社のみ ON にしてリリースし、初回出力後に CS 山田・Sales 鈴木が A 社の経理 SaaS への取り込み成功までを確認する。
+            <span class="step-note">期限: スプリント枠次第 (2026-05-29 を目標) / 担当: 佐藤 (dev PM) ・ 山田 (CS) ・ 鈴木 (Sales)</span>
+          </span>
+        </li>
+      </ol>
+
+      <h3>報告先</h3>
+      <table class="report-table">
+        <thead>
+          <tr>
+            <th class="col-trigger">トリガー</th>
+            <th class="col-to">報告先</th>
+            <th class="col-channel">手段</th>
+            <th class="col-when">タイミング / 形式</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td data-label="トリガー">A 社合意取得</td>
+            <td data-label="報告先">CS リーダー / Sales マネージャー</td>
+            <td data-label="手段">Slack <code>#cs-a-company</code></td>
+            <td data-label="タイミング">合意当日中に「合意済み + 議事録リンク」スレッド</td>
+          </tr>
+          <tr>
+            <td data-label="トリガー">dev 起票完了</td>
+            <td data-label="報告先">プロダクト責任者 (高橋)</td>
+            <td data-label="手段">Linear チケットの mention</td>
+            <td data-label="タイミング">起票直後に Linear で @takahashi mention</td>
+          </tr>
+          <tr>
+            <td data-label="トリガー">A 社一次回答完了</td>
+            <td data-label="報告先">A 社経理 田辺氏 / 営業本部長 (中村)</td>
+            <td data-label="手段">メール (BCC: 中村)</td>
+            <td data-label="タイミング">2026-05-21 17:00 までに送信、Salesforce にもログ</td>
+          </tr>
+          <tr>
+            <td data-label="トリガー">リリース完了</td>
+            <td data-label="報告先">A 社全関係者 / CS 全員 / 経営定例</td>
+            <td data-label="手段">メール + Slack <code>#release-notes</code></td>
+            <td data-label="タイミング">リリース当日中。経営定例には次回 (隔週) で報告</td>
+          </tr>
+          <tr>
+            <td data-label="トリガー">遅延・障害発生</td>
+            <td data-label="報告先">CS リーダー / Sales マネージャー / dev PM (同時)</td>
+            <td data-label="手段">Slack <code>#cs-a-company</code> + メール</td>
+            <td data-label="タイミング">発生検知から 30 分以内、状況のみ第一報</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- 禁則事項                                                        -->
+    <!-- ============================================================== -->
+    <section>
+      <h2>禁則事項</h2>
+      <ul class="task-list">
+        <li>
+          <span class="task-body"><strong>CS が単独で dev に直接ハンドオフしない</strong>。商務面の確認が抜けると追加費用の判断や契約解釈で齟齬が生じるため、必ず Sales を経由する</span>
+        </li>
+        <li>
+          <span class="task-body"><strong>Sales が A 社にリリース日を確約しない</strong>。dev のスプリント枠が未確定の段階で日付を出すと、ずれた際の信頼毀損が大きい</span>
+        </li>
+        <li>
+          <span class="task-body"><strong>dev が「A 社専用フォーマット」を直接ハードコードしない</strong>。あくまでテナント設定でスイッチする実装にし、横展開を可能にしておく</span>
+        </li>
+        <li>
+          <span class="task-body"><strong>本件のやりとりを DM や個人メールで完結させない</strong>。CS / Sales / dev のどの部署からも追えるよう <code>#cs-a-company</code> および Salesforce / Linear に必ず記録する</span>
+        </li>
+        <li>
+          <span class="task-body"><strong>B 社・C 社へ「同じ要望なら対応します」と先回りで案内しない</strong>。横展開の方針が未決のため、判断確定までは A 社のみの個別対応として扱う</span>
+        </li>
+      </ul>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- リスク管理                                                      -->
+    <!-- ============================================================== -->
+    <section>
+      <h2>リスク管理</h2>
+      <table class="risk-table">
+        <thead>
+          <tr>
+            <th class="col-risk">リスク</th>
+            <th class="col-sev">度合</th>
+            <th class="col-cause">原因</th>
+            <th class="col-action">対策</th>
+            <th class="col-owner">担当</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="col-risk-cell" data-label="リスク">一次回答期限 (2026-05-21) に間に合わず、A 社の更新意向に影響する</td>
+            <td data-label="度合"><span class="sev high">High</span></td>
+            <td data-label="原因">税区分カラムの仕様確認待ちで Sales 工程が止まる可能性</td>
+            <td data-label="対策">CS 山田から 2026-05-15 中に追加質問。返答が翌日までに来ない場合は仮値で dev 起票し、後追いで補正</td>
+            <td data-label="担当">山田 (CS) / 鈴木 (Sales)</td>
+          </tr>
+          <tr>
+            <td class="col-risk-cell" data-label="リスク">dev のスプリント余力がなく実装着手が後ろ倒しになる</td>
+            <td data-label="度合"><span class="sev mid">Middle</span></td>
+            <td data-label="原因">既存 PJ (通知設定機能) のリリース後対応と被る可能性</td>
+            <td data-label="対策">5/20 のスプリントプラン前に佐藤と所要時間レビュー、優先度の比較を経営判断にエスカレ</td>
+            <td data-label="担当">佐藤 (dev PM)</td>
+          </tr>
+          <tr>
+            <td class="col-risk-cell" data-label="リスク">A 社内で要件が変わり、合意済みフォーマットが追加で揺れる</td>
+            <td data-label="度合"><span class="sev mid">Middle</span></td>
+            <td data-label="原因">A 社経理 SaaS のベンダー側仕様が確定していない可能性</td>
+            <td data-label="対策">合意時に「カラム追加は別チケット扱い」と書面で握り、Salesforce に明記</td>
+            <td data-label="担当">鈴木 (Sales)</td>
+          </tr>
+          <tr>
+            <td class="col-risk-cell" data-label="リスク">CS / Sales / dev でステータス認識が食い違い、A 社へ矛盾した連絡が行く</td>
+            <td data-label="度合"><span class="sev mid">Middle</span></td>
+            <td data-label="原因">情報共有が複数チャンネルに分散</td>
+            <td data-label="対策"><code>#cs-a-company</code> を一次情報源とし、対外連絡前に必ず同チャンネルで関係者 mention</td>
+            <td data-label="担当">山田 (CS)</td>
+          </tr>
+          <tr>
+            <td class="col-risk-cell" data-label="リスク">B 社・C 社へ情報が漏れて先行要望が殺到する</td>
+            <td data-label="度合"><span class="sev low">Low</span></td>
+            <td data-label="原因">Slack の公開チャンネル運用で情報が拡散する余地</td>
+            <td data-label="対策"><code>#cs-a-company</code> は private channel 設定とし、参加者は CS / Sales / dev の必要メンバーに限定</td>
+            <td data-label="担当">山田 (CS)</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- 参照先                                                          -->
+    <!-- ============================================================== -->
+    <section>
+      <h2>参照先</h2>
+      <ul class="ref-list">
+        <li>
+          <span class="ref-kind">Zendesk</span>
+          <span class="ref-target">Ticket #4821</span>
+          <span class="ref-note">A 社からの一次問い合わせ。要望文・添付サンプル CSV の原本</span>
+        </li>
+        <li>
+          <span class="ref-kind">Notion</span>
+          <span class="ref-target">requests/2026-05-a-company</span>
+          <span class="ref-note">CS が整理した「現状」「希望」「期限」3 項目のヒアリングシート</span>
+        </li>
+        <li>
+          <span class="ref-kind">Salesforce</span>
+          <span class="ref-target">A 社 商談オブジェクト</span>
+          <span class="ref-note">商務面 (追加費用なしの合意) と契約上の関連情報</span>
+        </li>
+        <li>
+          <span class="ref-kind">Linear</span>
+          <span class="ref-target">BILL-* (起票予定)</span>
+          <span class="ref-note">dev チームへの正式起票チケット。Sales 鈴木が 2026-05-19 までに起票</span>
+        </li>
+        <li>
+          <span class="ref-kind">Notion</span>
+          <span class="ref-target">design/billing-csv-format-switch</span>
+          <span class="ref-note">dev 佐藤が作成する設計案 (テナント設定キー <code>billing.csv_format</code> による切替)</span>
+        </li>
+        <li>
+          <span class="ref-kind">Slack</span>
+          <span class="ref-target">#cs-a-company</span>
+          <span class="ref-note">CS / Sales / dev の一次情報源 private channel。対外連絡前に必ず関係者 mention</span>
+        </li>
+        <li>
+          <span class="ref-kind">Slack</span>
+          <span class="ref-target">#release-notes</span>
+          <span class="ref-note">リリース完了報告先 (全社共有)</span>
+        </li>
+      </ul>
+    </section>
+
+  </div>
+</body>
+</html>

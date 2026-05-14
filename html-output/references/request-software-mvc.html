@@ -1,0 +1,1017 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>作業依頼: ユーザー通知設定 (Notification Preferences) の追加</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      /* ---------- paper-like base (plan-task と共通) ---------- */
+      --paper:       #FFFFFF;
+      --ink:         #1A1A1A;
+      --ink-soft:    #4A4A4A;
+      --ink-mute:    #767676;
+      --rule:        #E5E5E5;
+      --rule-strong: #1A1A1A;
+      --tint:        #F7F7F5;
+      --tint-soft:   #FBFBFA;
+
+      /* ---------- severity (plan-task と共通) ---------- */
+      --sev-high-bg:  #FBE9E2;
+      --sev-high-fg:  #8A3B1E;
+      --sev-mid-bg:   #F4ECDA;
+      --sev-mid-fg:   #6B5320;
+      --sev-low-bg:   #E8EEDF;
+      --sev-low-fg:   #4B5C39;
+
+      /* ---------- diff (diff-side-by-side と共通) ---------- */
+      --diff-bg-subtle:    #F6F8FA;
+      --diff-bg-muted:     #EEF1F4;
+      --diff-border:       #D0D7DE;
+      --diff-border-muted: #E4E7EB;
+      --diff-text-muted:   #57606A;
+
+      --add-bg:        #E6FFEC;
+      --add-bg-strong: #ABF2BC;
+      --add-fg:        #1A7F37;
+      --del-bg:        #FFEBE9;
+      --del-bg-strong: #FFD7D5;
+      --del-fg:        #CF222E;
+
+      /* TypeScript / Ruby 用の最小 syntax token (diff-* と共通) */
+      --tok-keyword:  #CF222E;
+      --tok-string:   #0A3069;
+      --tok-number:   #0550AE;
+      --tok-comment:  #6E7781;
+      --tok-type:     #953800;
+      --tok-fn:       #8250DF;
+      --tok-symbol:   #0550AE;
+
+      --sans: 'Inter', 'Noto Sans JP', system-ui, -apple-system, sans-serif;
+      --mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { -webkit-text-size-adjust: 100%; }
+
+    body {
+      font-family: var(--sans);
+      font-feature-settings: "palt" 1;
+      background: var(--paper);
+      color: var(--ink);
+      line-height: 1.7;
+      font-size: 15px;
+      padding: 64px 32px 120px;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    .page { max-width: 960px; margin: 0 auto; }
+
+    /* ---------- document header ---------- */
+    .doc-head {
+      border-bottom: 2px solid var(--rule-strong);
+      padding-bottom: 28px;
+      margin-bottom: 48px;
+    }
+    h1 {
+      font-family: var(--sans);
+      font-weight: 700;
+      font-size: 28px;
+      line-height: 1.35;
+      color: var(--ink);
+      letter-spacing: -0.01em;
+    }
+    .doc-meta {
+      display: flex;
+      gap: 18px;
+      margin-top: 14px;
+      font-family: var(--mono);
+      font-size: 11.5px;
+      color: var(--ink-mute);
+      letter-spacing: 0.02em;
+    }
+    .doc-meta .label { color: var(--ink-mute); }
+    .doc-meta .val { color: var(--ink); margin-left: 4px; }
+
+    /* ---------- sections ---------- */
+    section { margin-bottom: 56px; }
+
+    h2 {
+      font-family: var(--sans);
+      font-weight: 600;
+      font-size: 20px;
+      color: var(--ink);
+      letter-spacing: -0.005em;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--rule-strong);
+      margin-bottom: 24px;
+    }
+    h3 {
+      font-family: var(--sans);
+      font-weight: 600;
+      font-size: 13px;
+      color: var(--ink);
+      margin-top: 28px;
+      margin-bottom: 12px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      padding-left: 10px;
+      border-left: 3px solid var(--ink);
+    }
+    h3:first-child { margin-top: 0; }
+
+    p { font-size: 14.5px; color: var(--ink); line-height: 1.7; }
+    p + p { margin-top: 10px; }
+
+    /* ---------- bullet / task list (plan-task 流用) ---------- */
+    .task-list { list-style: none; }
+    .task-list > li {
+      display: flex;
+      align-items: flex-start;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--rule);
+      gap: 12px;
+    }
+    .task-list > li:last-child { border-bottom: none; }
+    .task-list .task-body {
+      font-size: 14.5px;
+      color: var(--ink);
+      line-height: 1.65;
+      flex: 1;
+    }
+    .task-list .tag {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--ink);
+      white-space: nowrap;
+      padding: 3px 9px;
+      background: var(--paper);
+      border: 1px dashed var(--rule);
+      border-radius: 4px;
+      letter-spacing: 0.01em;
+      flex-shrink: 0;
+      font-weight: 500;
+    }
+    .task-list .tag.fixed   { background: #EEF4EA; border-style: solid; border-color: #C7D6BC; color: #3F5A28; }
+    .task-list .tag.pending { background: #FBF1E2; border-style: solid; border-color: #E6CFA1; color: #6B4B16; }
+    .task-list.muted .task-body { color: var(--ink); }
+
+    .note {
+      display: inline-block;
+      margin-top: 4px;
+      font-size: 13px;
+      color: var(--ink-mute);
+      line-height: 1.6;
+    }
+
+    /* ---------- inline elements ---------- */
+    code {
+      font-family: var(--mono);
+      font-size: 0.88em;
+      background: var(--tint);
+      padding: 1px 6px;
+      border-radius: 3px;
+      color: var(--ink);
+    }
+    strong { font-weight: 600; color: var(--ink); }
+    em { font-style: normal; color: var(--ink-mute); font-size: 0.92em; }
+
+    /* ---------- risk table (plan-task 流用) ---------- */
+    .risk-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13.5px;
+      border: 1px solid var(--rule);
+      table-layout: fixed;
+    }
+    .risk-table thead th {
+      font-family: var(--sans);
+      font-weight: 600;
+      font-size: 12px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--ink);
+      text-align: left;
+      padding: 12px 14px;
+      background: var(--tint);
+      border-bottom: 1.5px solid var(--rule-strong);
+      vertical-align: bottom;
+    }
+    .risk-table tbody td {
+      padding: 14px;
+      border-top: 1px solid var(--rule);
+      vertical-align: top;
+      color: var(--ink-soft);
+      line-height: 1.6;
+    }
+    .risk-table tbody tr:nth-child(even) td { background: var(--tint-soft); }
+    .risk-table tbody td.col-risk-cell { color: var(--ink); font-weight: 500; }
+    .risk-table .col-risk     { width: 26%; }
+    .risk-table .col-sev      { width: 10%; }
+    .risk-table .col-cause    { width: 24%; }
+    .risk-table .col-action   { width: 28%; }
+    .risk-table .col-owner    { width: 12%; }
+
+    .sev {
+      display: inline-block;
+      font-family: var(--mono);
+      font-size: 10.5px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 4px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .sev.high { background: var(--sev-high-bg); color: var(--sev-high-fg); }
+    .sev.mid  { background: var(--sev-mid-bg);  color: var(--sev-mid-fg); }
+    .sev.low  { background: var(--sev-low-bg);  color: var(--sev-low-fg); }
+
+    /* ---------- references list ---------- */
+    .ref-list { list-style: none; }
+    .ref-list > li {
+      padding: 10px 0;
+      border-bottom: 1px solid var(--rule);
+      display: flex;
+      gap: 14px;
+      align-items: baseline;
+      font-size: 14px;
+    }
+    .ref-list > li:last-child { border-bottom: none; }
+    .ref-list .ref-kind {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--ink-mute);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      flex-shrink: 0;
+      width: 80px;
+    }
+    .ref-list .ref-target {
+      font-family: var(--mono);
+      font-size: 12.5px;
+      color: var(--ink);
+    }
+    .ref-list .ref-note { color: var(--ink-soft); font-size: 13.5px; }
+
+    /* ============================================================
+       Side-by-side Diff (diff-side-by-side.html 由来)
+       ============================================================ */
+    .diff-card {
+      border: 1px solid var(--diff-border);
+      border-radius: 6px;
+      overflow: hidden;
+      margin-bottom: 18px;
+      background: var(--paper);
+    }
+    .diff-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      background: var(--diff-bg-subtle);
+      border-bottom: 1px solid var(--diff-border);
+      font-size: 13px;
+    }
+    .diff-header .filename {
+      font-family: var(--mono);
+      font-weight: 500;
+      flex: 1 1 auto;
+      min-width: 0;
+      word-break: break-all;
+      color: var(--ink);
+    }
+    .diff-header .stat {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--diff-text-muted);
+    }
+    .diff-header .stat .added   { color: var(--add-fg); font-weight: 600; }
+    .diff-header .stat .removed { color: var(--del-fg); font-weight: 600; }
+    .diff-header .badge {
+      font-family: var(--mono);
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 3px;
+      background: var(--tint);
+      border: 1px solid var(--rule);
+      color: var(--ink-soft);
+    }
+    .diff-header .badge.new {
+      background: var(--add-bg); color: var(--add-fg); border-color: var(--add-bg-strong);
+    }
+
+    .split {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      font-family: var(--mono);
+      font-size: 12.5px;
+      line-height: 1.6;
+    }
+    .split > .pane {
+      overflow-x: auto;
+      /* 横スクロール時、短い行の色背景が途切れないよう、
+         全行を最長行の幅にストレッチさせる (flex line cross-size = 最大子要素幅) */
+      display: flex;
+      flex-direction: column;
+    }
+    .split > .pane > * { flex-shrink: 0; }
+    .split > .pane.before { border-right: 1px solid var(--diff-border); }
+    .split .pane-header {
+      padding: 6px 12px;
+      background: var(--diff-bg-muted);
+      border-bottom: 1px solid var(--diff-border-muted);
+      font-family: var(--sans);
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--diff-text-muted);
+    }
+    .srow {
+      display: grid;
+      grid-template-columns: 40px 1fr;
+      /* 行を最低でも自身のコンテンツ幅まで広げる。
+         align-items: stretch (default) と組み合わさり、全行が最長行幅で揃う */
+      min-width: max-content;
+    }
+    .srow > * {
+      padding: 0 8px;
+      white-space: pre;
+    }
+    .srow .lno {
+      text-align: right;
+      color: var(--diff-text-muted);
+      background: var(--diff-bg-subtle);
+      user-select: none;
+      border-right: 1px solid var(--diff-border-muted);
+    }
+    .srow.changed-del { background: var(--del-bg); }
+    .srow.changed-del .lno { background: var(--del-bg-strong); color: var(--del-fg); }
+    .srow.changed-add { background: var(--add-bg); }
+    .srow.changed-add .lno { background: var(--add-bg-strong); color: var(--add-fg); }
+    .srow.empty    { background: var(--diff-bg-subtle); }
+    .srow.empty .lno { background: var(--diff-bg-subtle); color: transparent; }
+
+    .ins {
+      background: var(--add-bg-strong);
+      border-radius: 2px;
+      padding: 0 1px;
+    }
+    .del {
+      background: var(--del-bg-strong);
+      border-radius: 2px;
+      padding: 0 1px;
+      text-decoration: line-through;
+      text-decoration-color: rgba(207, 34, 46, 0.6);
+    }
+
+    /* diff 補足コメント */
+    .diff-note {
+      margin: 8px 12px 12px;
+      padding: 10px 12px;
+      border-left: 3px solid var(--diff-border);
+      background: var(--diff-bg-subtle);
+      border-radius: 0 4px 4px 0;
+      font-size: 13px;
+      color: var(--ink-soft);
+    }
+    .diff-note .label {
+      display: inline-block;
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 600;
+      padding: 1px 7px;
+      border-radius: 999px;
+      background: var(--tint);
+      color: var(--ink);
+      margin-right: 8px;
+      letter-spacing: 0.03em;
+    }
+    .diff-note code {
+      background: var(--paper);
+      border: 1px solid var(--diff-border-muted);
+    }
+
+    /* syntax tokens */
+    .tok-kw   { color: var(--tok-keyword); font-weight: 500; }
+    .tok-str  { color: var(--tok-string); }
+    .tok-num  { color: var(--tok-number); }
+    .tok-com  { color: var(--tok-comment); font-style: italic; }
+    .tok-typ  { color: var(--tok-type); }
+    .tok-fn   { color: var(--tok-fn); }
+    .tok-sym  { color: var(--tok-symbol); }
+
+    /* ---------- responsive ---------- */
+    @media (max-width: 900px) {
+      .split { grid-template-columns: 1fr; }
+      .split > .pane.before { border-right: none; border-bottom: 1px solid var(--diff-border); }
+    }
+    @media (max-width: 720px) {
+      body { padding: 40px 20px 80px; font-size: 14px; }
+      h1 { font-size: 22px; }
+      h2 { font-size: 17px; }
+
+      .risk-table thead { display: none; }
+      .risk-table, .risk-table tbody, .risk-table tr, .risk-table td { display: block; width: 100%; }
+      .risk-table tr { border-top: 1px solid var(--rule); padding: 10px 0; }
+      .risk-table tbody tr:nth-child(even) td { background: transparent; }
+      .risk-table tbody td { border-top: none; padding: 4px 0; }
+      .risk-table tbody td::before {
+        content: attr(data-label);
+        display: inline-block;
+        width: 80px;
+        font-family: var(--mono);
+        font-size: 11px;
+        text-transform: uppercase;
+        color: var(--ink-mute);
+        letter-spacing: 0.04em;
+      }
+    }
+
+    @media print {
+      body { padding: 24mm 18mm; font-size: 11pt; background: #FFFFFF; }
+      .page { max-width: none; }
+      h1 { font-size: 20pt; }
+      h2 { font-size: 13pt; }
+      section { margin-bottom: 28px; page-break-inside: avoid; }
+      .diff-card, .risk-table, .task-list > li { page-break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+
+    <!-- ============================================================== -->
+    <!-- DOC HEADER                                                      -->
+    <!-- ============================================================== -->
+    <header class="doc-head">
+      <h1>作業依頼: ユーザー通知設定 (Notification Preferences) の追加</h1>
+    </header>
+
+    <!-- ============================================================== -->
+    <!-- やりたいこと                                                    -->
+    <!-- ============================================================== -->
+    <section>
+      <h2>やりたいこと</h2>
+      <ul class="task-list">
+        <li>
+          <span class="task-body">ユーザーごとにメール / プッシュ / アプリ内通知の受信可否を設定できる画面を <code>/settings/notifications</code> に追加する</span>
+        </li>
+        <li>
+          <span class="task-body">通知の種別は <code>marketing</code> / <code>product_update</code> / <code>security</code> の 3 系統。<code>security</code> は法令上オフにできない仕様にする</span>
+        </li>
+        <li>
+          <span class="task-body">既存の <code>UserMailer</code> / <code>PushDispatcher</code> から、送信前に <code>NotificationPreference</code> を参照させる</span>
+        </li>
+      </ul>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- なぜやるか                                                      -->
+    <!-- ============================================================== -->
+    <section>
+      <h2>なぜやるか</h2>
+      <ul class="task-list">
+        <li>
+          <span class="task-body">CS 経由で「マーケメールが多い、止めたい」という問い合わせが直近 1 ヶ月で 18 件発生しており、現状は CS が DB を直接更新して対応している</span>
+        </li>
+        <li>
+          <span class="task-body">2026 年 6 月施行の改正特定電子メール法対応として、ユーザー自身が受信設定を変更できる導線を提供する必要がある</span>
+        </li>
+        <li>
+          <span class="task-body">通知種別の細分化により、解約理由「通知が多すぎる」(直近四半期で 7.2%) を抑制する</span>
+        </li>
+      </ul>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- 実施事項: 概要                                                  -->
+    <!-- ============================================================== -->
+    <section>
+      <h2>実施事項: 概要</h2>
+
+      <h3>前提条件</h3>
+      <ul class="task-list">
+        <li>
+          <span class="task-body">対象ブランチは <code>main</code>。リリースはフィーチャーフラグ <code>notification_preferences_v1</code> 配下で段階公開</span>
+        </li>
+        <li>
+          <span class="task-body">Ruby 3.3 / Rails 7.1。<code>devise</code> による認証済みユーザー前提</span>
+        </li>
+        <li>
+          <span class="task-body">既存の <code>users</code> テーブルには通知関連カラムを持たない。新規テーブルとして切り出す</span>
+        </li>
+      </ul>
+
+      <h3>確定</h3>
+      <ul class="task-list">
+        <li>
+          <span class="task-body">テーブル名は <code>notification_preferences</code>、<code>user_id</code> は一意制約 (1 ユーザー 1 レコード)</span>
+        </li>
+        <li>
+          <span class="task-body">通知種別は <code>marketing</code> / <code>product_update</code> / <code>security</code> の 3 値。スキーマは boolean × 3 カラム (jsonb は不採用)</span>
+        </li>
+        <li>
+          <span class="task-body"><code>security</code> 通知は強制 ON。更新時にバリデーションで弾く</span>
+        </li>
+        <li>
+          <span class="task-body">UI は既存 <code>SettingsLayout</code> 配下に新規ページを追加する</span>
+        </li>
+      </ul>
+
+      <h3>未決</h3>
+      <ul class="task-list">
+        <li>
+          <span class="task-body">既存ユーザーへのデフォルト値を「全て ON」とするか「マーケのみ OFF」とするか<br><span class="note">マーケのみ OFF にすると配信数が初日から 30% 程度減るため、Growth チームとの調整が必要。来週月曜のレビューで方針決定予定。</span></span>
+        </li>
+        <li>
+          <span class="task-body">プッシュ通知の OS 側設定 (iOS / Android のシステム設定) と本機能の関係をどう表記するか</span>
+        </li>
+      </ul>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- 実施事項: 詳細 (MVC)                                            -->
+    <!-- ============================================================== -->
+    <section>
+      <h2>実施事項: 詳細</h2>
+
+      <!-- ============================================================ -->
+      <!-- controller                                                    -->
+      <!-- ============================================================ -->
+      <h3>controller</h3>
+      <p>新規エンドポイント <code>Settings::NotificationPreferencesController</code> を追加。<code>show</code> / <code>update</code> の 2 アクションのみ。</p>
+
+      <article class="diff-card">
+        <div class="diff-header">
+          <span class="filename">app/controllers/settings/notification_preferences_controller.rb</span>
+          <span class="badge new">NEW FILE</span>
+          <span class="stat"><span class="added">+24</span> <span class="removed">−0</span></span>
+        </div>
+        <div class="split">
+          <div class="pane before">
+            <div class="pane-header">before — main</div>
+            <div class="srow empty"><span class="lno">·</span><span><span class="tok-com"># (このファイルは存在しない)</span></span></div>
+            <div class="srow empty"><span class="lno">·</span><span></span></div>
+            <div class="srow empty"><span class="lno">·</span><span></span></div>
+            <div class="srow empty"><span class="lno">·</span><span></span></div>
+            <div class="srow empty"><span class="lno">·</span><span></span></div>
+            <div class="srow empty"><span class="lno">·</span><span></span></div>
+            <div class="srow empty"><span class="lno">·</span><span></span></div>
+            <div class="srow empty"><span class="lno">·</span><span></span></div>
+            <div class="srow empty"><span class="lno">·</span><span></span></div>
+            <div class="srow empty"><span class="lno">·</span><span></span></div>
+            <div class="srow empty"><span class="lno">·</span><span></span></div>
+            <div class="srow empty"><span class="lno">·</span><span></span></div>
+            <div class="srow empty"><span class="lno">·</span><span></span></div>
+            <div class="srow empty"><span class="lno">·</span><span></span></div>
+            <div class="srow empty"><span class="lno">·</span><span></span></div>
+            <div class="srow empty"><span class="lno">·</span><span></span></div>
+            <div class="srow empty"><span class="lno">·</span><span></span></div>
+          </div>
+          <div class="pane after">
+            <div class="pane-header">after — feat/notification-preferences</div>
+            <div class="srow changed-add"><span class="lno">1</span><span><span class="tok-kw">module</span> <span class="tok-typ">Settings</span></span></div>
+            <div class="srow changed-add"><span class="lno">2</span><span>  <span class="tok-kw">class</span> <span class="tok-typ">NotificationPreferencesController</span> &lt; <span class="tok-typ">ApplicationController</span></span></div>
+            <div class="srow changed-add"><span class="lno">3</span><span>    <span class="tok-fn">before_action</span> <span class="tok-sym">:authenticate_user!</span></span></div>
+            <div class="srow changed-add"><span class="lno">4</span><span>    <span class="tok-fn">before_action</span> <span class="tok-sym">:set_preference</span></span></div>
+            <div class="srow changed-add"><span class="lno">5</span><span></span></div>
+            <div class="srow changed-add"><span class="lno">6</span><span>    <span class="tok-kw">def</span> <span class="tok-fn">show</span>; <span class="tok-kw">end</span></span></div>
+            <div class="srow changed-add"><span class="lno">7</span><span></span></div>
+            <div class="srow changed-add"><span class="lno">8</span><span>    <span class="tok-kw">def</span> <span class="tok-fn">update</span></span></div>
+            <div class="srow changed-add"><span class="lno">9</span><span>      <span class="tok-kw">if</span> @preference.<span class="tok-fn">update</span>(preference_params)</span></div>
+            <div class="srow changed-add"><span class="lno">10</span><span>        <span class="tok-fn">redirect_to</span> settings_notification_preferences_path,</span></div>
+            <div class="srow changed-add"><span class="lno">11</span><span>                    <span class="tok-sym">notice:</span> <span class="tok-str">'通知設定を更新しました'</span></span></div>
+            <div class="srow changed-add"><span class="lno">12</span><span>      <span class="tok-kw">else</span></span></div>
+            <div class="srow changed-add"><span class="lno">13</span><span>        <span class="tok-fn">render</span> <span class="tok-sym">:show</span>, <span class="tok-sym">status:</span> <span class="tok-sym">:unprocessable_entity</span></span></div>
+            <div class="srow changed-add"><span class="lno">14</span><span>      <span class="tok-kw">end</span></span></div>
+            <div class="srow changed-add"><span class="lno">15</span><span>    <span class="tok-kw">end</span></span></div>
+            <div class="srow changed-add"><span class="lno">16</span><span></span></div>
+            <div class="srow changed-add"><span class="lno">17</span><span>    <span class="tok-kw">private</span></span></div>
+            <div class="srow changed-add"><span class="lno">18</span><span></span></div>
+            <div class="srow changed-add"><span class="lno">19</span><span>    <span class="tok-kw">def</span> <span class="tok-fn">set_preference</span></span></div>
+            <div class="srow changed-add"><span class="lno">20</span><span>      @preference = current_user.notification_preference <span class="tok-kw">||</span></span></div>
+            <div class="srow changed-add"><span class="lno">21</span><span>                    current_user.<span class="tok-fn">build_notification_preference</span></span></div>
+            <div class="srow changed-add"><span class="lno">22</span><span>    <span class="tok-kw">end</span></span></div>
+            <div class="srow changed-add"><span class="lno">23</span><span>    <span class="tok-kw">end</span></span></div>
+            <div class="srow changed-add"><span class="lno">24</span><span><span class="tok-kw">end</span></span></div>
+          </div>
+        </div>
+        <div class="diff-note">
+          <span class="label">意図</span>
+          初回アクセス時にレコードが無いケース (既存ユーザー) に備え、<code>set_preference</code> で <code>build_notification_preference</code> によりメモリ上のデフォルト値を確保する。実保存は <code>update</code> 時のみ。
+        </div>
+      </article>
+
+      <!-- ============================================================ -->
+      <!-- model                                                         -->
+      <!-- ============================================================ -->
+      <h3>model</h3>
+      <p><code>NotificationPreference</code> モデルを新規作成、加えて <code>User</code> に関連を追加する。</p>
+
+      <article class="diff-card">
+        <div class="diff-header">
+          <span class="filename">app/models/notification_preference.rb</span>
+          <span class="badge new">NEW FILE</span>
+          <span class="stat"><span class="added">+18</span> <span class="removed">−0</span></span>
+        </div>
+        <div class="split">
+          <div class="pane before">
+            <div class="pane-header">before — main</div>
+            <div class="srow empty"><span class="lno">·</span><span><span class="tok-com"># (このファイルは存在しない)</span></span></div>
+            <div class="srow empty"><span class="lno">·</span><span></span></div>
+            <div class="srow empty"><span class="lno">·</span><span></span></div>
+            <div class="srow empty"><span class="lno">·</span><span></span></div>
+            <div class="srow empty"><span class="lno">·</span><span></span></div>
+            <div class="srow empty"><span class="lno">·</span><span></span></div>
+            <div class="srow empty"><span class="lno">·</span><span></span></div>
+            <div class="srow empty"><span class="lno">·</span><span></span></div>
+            <div class="srow empty"><span class="lno">·</span><span></span></div>
+            <div class="srow empty"><span class="lno">·</span><span></span></div>
+            <div class="srow empty"><span class="lno">·</span><span></span></div>
+            <div class="srow empty"><span class="lno">·</span><span></span></div>
+            <div class="srow empty"><span class="lno">·</span><span></span></div>
+            <div class="srow empty"><span class="lno">·</span><span></span></div>
+            <div class="srow empty"><span class="lno">·</span><span></span></div>
+            <div class="srow empty"><span class="lno">·</span><span></span></div>
+            <div class="srow empty"><span class="lno">·</span><span></span></div>
+            <div class="srow empty"><span class="lno">·</span><span></span></div>
+          </div>
+          <div class="pane after">
+            <div class="pane-header">after — feat/notification-preferences</div>
+            <div class="srow changed-add"><span class="lno">1</span><span><span class="tok-kw">class</span> <span class="tok-typ">NotificationPreference</span> &lt; <span class="tok-typ">ApplicationRecord</span></span></div>
+            <div class="srow changed-add"><span class="lno">2</span><span>  <span class="tok-fn">belongs_to</span> <span class="tok-sym">:user</span></span></div>
+            <div class="srow changed-add"><span class="lno">3</span><span></span></div>
+            <div class="srow changed-add"><span class="lno">4</span><span>  <span class="tok-fn">validates</span> <span class="tok-sym">:user_id</span>, <span class="tok-sym">uniqueness:</span> <span class="tok-kw">true</span></span></div>
+            <div class="srow changed-add"><span class="lno">5</span><span>  <span class="tok-fn">validate</span>  <span class="tok-sym">:security_must_be_enabled</span></span></div>
+            <div class="srow changed-add"><span class="lno">6</span><span></span></div>
+            <div class="srow changed-add"><span class="lno">7</span><span>  <span class="tok-fn">attribute</span> <span class="tok-sym">:marketing</span>,       <span class="tok-sym">:boolean</span>, <span class="tok-sym">default:</span> <span class="tok-kw">true</span></span></div>
+            <div class="srow changed-add"><span class="lno">8</span><span>  <span class="tok-fn">attribute</span> <span class="tok-sym">:product_update</span>,  <span class="tok-sym">:boolean</span>, <span class="tok-sym">default:</span> <span class="tok-kw">true</span></span></div>
+            <div class="srow changed-add"><span class="lno">9</span><span>  <span class="tok-fn">attribute</span> <span class="tok-sym">:security</span>,        <span class="tok-sym">:boolean</span>, <span class="tok-sym">default:</span> <span class="tok-kw">true</span></span></div>
+            <div class="srow changed-add"><span class="lno">10</span><span></span></div>
+            <div class="srow changed-add"><span class="lno">11</span><span>  <span class="tok-kw">private</span></span></div>
+            <div class="srow changed-add"><span class="lno">12</span><span></span></div>
+            <div class="srow changed-add"><span class="lno">13</span><span>  <span class="tok-kw">def</span> <span class="tok-fn">security_must_be_enabled</span></span></div>
+            <div class="srow changed-add"><span class="lno">14</span><span>    <span class="tok-kw">return</span> <span class="tok-kw">if</span> security</span></div>
+            <div class="srow changed-add"><span class="lno">15</span><span>    errors.<span class="tok-fn">add</span>(<span class="tok-sym">:security</span>, <span class="tok-str">'はオフにできません'</span>)</span></div>
+            <div class="srow changed-add"><span class="lno">16</span><span>  <span class="tok-kw">end</span></span></div>
+            <div class="srow changed-add"><span class="lno">17</span><span><span class="tok-kw">end</span></span></div>
+            <div class="srow empty"><span class="lno">·</span><span></span></div>
+          </div>
+        </div>
+      </article>
+
+      <article class="diff-card">
+        <div class="diff-header">
+          <span class="filename">app/models/user.rb</span>
+          <span class="stat"><span class="added">+2</span> <span class="removed">−0</span></span>
+        </div>
+        <div class="split">
+          <div class="pane before">
+            <div class="pane-header">before — main</div>
+            <div class="srow"><span class="lno">8</span><span><span class="tok-kw">class</span> <span class="tok-typ">User</span> &lt; <span class="tok-typ">ApplicationRecord</span></span></div>
+            <div class="srow"><span class="lno">9</span><span>  <span class="tok-fn">has_many</span> <span class="tok-sym">:projects</span>, <span class="tok-sym">dependent:</span> <span class="tok-sym">:destroy</span></span></div>
+            <div class="srow"><span class="lno">10</span><span>  <span class="tok-fn">has_many</span> <span class="tok-sym">:audit_events</span></span></div>
+            <div class="srow empty"><span class="lno">·</span><span></span></div>
+            <div class="srow empty"><span class="lno">·</span><span></span></div>
+            <div class="srow"><span class="lno">11</span><span></span></div>
+            <div class="srow"><span class="lno">12</span><span>  <span class="tok-fn">validates</span> <span class="tok-sym">:email</span>, <span class="tok-sym">presence:</span> <span class="tok-kw">true</span></span></div>
+            <div class="srow"><span class="lno">13</span><span><span class="tok-kw">end</span></span></div>
+          </div>
+          <div class="pane after">
+            <div class="pane-header">after — feat/notification-preferences</div>
+            <div class="srow"><span class="lno">8</span><span><span class="tok-kw">class</span> <span class="tok-typ">User</span> &lt; <span class="tok-typ">ApplicationRecord</span></span></div>
+            <div class="srow"><span class="lno">9</span><span>  <span class="tok-fn">has_many</span> <span class="tok-sym">:projects</span>, <span class="tok-sym">dependent:</span> <span class="tok-sym">:destroy</span></span></div>
+            <div class="srow"><span class="lno">10</span><span>  <span class="tok-fn">has_many</span> <span class="tok-sym">:audit_events</span></span></div>
+            <div class="srow changed-add"><span class="lno">11</span><span>  <span class="ins"><span class="tok-fn">has_one</span>  <span class="tok-sym">:notification_preference</span>, <span class="tok-sym">dependent:</span> <span class="tok-sym">:destroy</span></span></span></div>
+            <div class="srow changed-add"><span class="lno">12</span><span>  <span class="ins"><span class="tok-fn">accepts_nested_attributes_for</span> <span class="tok-sym">:notification_preference</span></span></span></div>
+            <div class="srow"><span class="lno">13</span><span></span></div>
+            <div class="srow"><span class="lno">14</span><span>  <span class="tok-fn">validates</span> <span class="tok-sym">:email</span>, <span class="tok-sym">presence:</span> <span class="tok-kw">true</span></span></div>
+            <div class="srow"><span class="lno">15</span><span><span class="tok-kw">end</span></span></div>
+          </div>
+        </div>
+        <div class="diff-note">
+          <span class="label">補足</span>
+          <code>has_one</code> 側に <code>dependent: :destroy</code> を入れる。ユーザー削除時に親レコード側の <code>before_destroy</code> 経由で関連も消えることを確認すること。
+        </div>
+      </article>
+
+      <!-- ============================================================ -->
+      <!-- view                                                          -->
+      <!-- ============================================================ -->
+      <h3>view</h3>
+      <p>設定ページのテンプレートを新規追加。既存 <code>SettingsLayout</code> のスタイルを踏襲する。</p>
+
+      <article class="diff-card">
+        <div class="diff-header">
+          <span class="filename">app/views/settings/notification_preferences/show.html.erb</span>
+          <span class="badge new">NEW FILE</span>
+          <span class="stat"><span class="added">+22</span> <span class="removed">−0</span></span>
+        </div>
+        <div class="split">
+          <div class="pane before">
+            <div class="pane-header">before — main</div>
+            <div class="srow empty"><span class="lno">·</span><span><span class="tok-com">&lt;%# (このファイルは存在しない) %&gt;</span></span></div>
+            <div class="srow empty"><span class="lno">·</span><span></span></div>
+            <div class="srow empty"><span class="lno">·</span><span></span></div>
+            <div class="srow empty"><span class="lno">·</span><span></span></div>
+            <div class="srow empty"><span class="lno">·</span><span></span></div>
+            <div class="srow empty"><span class="lno">·</span><span></span></div>
+            <div class="srow empty"><span class="lno">·</span><span></span></div>
+            <div class="srow empty"><span class="lno">·</span><span></span></div>
+            <div class="srow empty"><span class="lno">·</span><span></span></div>
+            <div class="srow empty"><span class="lno">·</span><span></span></div>
+            <div class="srow empty"><span class="lno">·</span><span></span></div>
+            <div class="srow empty"><span class="lno">·</span><span></span></div>
+            <div class="srow empty"><span class="lno">·</span><span></span></div>
+            <div class="srow empty"><span class="lno">·</span><span></span></div>
+            <div class="srow empty"><span class="lno">·</span><span></span></div>
+            <div class="srow empty"><span class="lno">·</span><span></span></div>
+            <div class="srow empty"><span class="lno">·</span><span></span></div>
+            <div class="srow empty"><span class="lno">·</span><span></span></div>
+            <div class="srow empty"><span class="lno">·</span><span></span></div>
+            <div class="srow empty"><span class="lno">·</span><span></span></div>
+            <div class="srow empty"><span class="lno">·</span><span></span></div>
+            <div class="srow empty"><span class="lno">·</span><span></span></div>
+          </div>
+          <div class="pane after">
+            <div class="pane-header">after — feat/notification-preferences</div>
+            <div class="srow changed-add"><span class="lno">1</span><span>&lt;%= <span class="tok-fn">render</span> <span class="tok-str">'settings/header'</span>, <span class="tok-sym">title:</span> <span class="tok-str">'通知設定'</span> %&gt;</span></div>
+            <div class="srow changed-add"><span class="lno">2</span><span></span></div>
+            <div class="srow changed-add"><span class="lno">3</span><span>&lt;%= <span class="tok-fn">form_with</span> <span class="tok-sym">model:</span> @preference,</span></div>
+            <div class="srow changed-add"><span class="lno">4</span><span>              <span class="tok-sym">url:</span> settings_notification_preferences_path,</span></div>
+            <div class="srow changed-add"><span class="lno">5</span><span>              <span class="tok-sym">method:</span> <span class="tok-sym">:patch</span>,</span></div>
+            <div class="srow changed-add"><span class="lno">6</span><span>              <span class="tok-sym">class:</span> <span class="tok-str">'settings-form'</span> <span class="tok-kw">do</span> |f| %&gt;</span></div>
+            <div class="srow changed-add"><span class="lno">7</span><span>  &lt;%= <span class="tok-fn">render</span> <span class="tok-str">'flash'</span> %&gt;</span></div>
+            <div class="srow changed-add"><span class="lno">8</span><span></span></div>
+            <div class="srow changed-add"><span class="lno">9</span><span>  &lt;<span class="tok-kw">fieldset</span>&gt;</span></div>
+            <div class="srow changed-add"><span class="lno">10</span><span>    &lt;<span class="tok-kw">legend</span>&gt;マーケティング情報&lt;/<span class="tok-kw">legend</span>&gt;</span></div>
+            <div class="srow changed-add"><span class="lno">11</span><span>    &lt;<span class="tok-kw">label</span>&gt;&lt;%= f.<span class="tok-fn">check_box</span> <span class="tok-sym">:marketing</span> %&gt; キャンペーン等の案内を受け取る&lt;/<span class="tok-kw">label</span>&gt;</span></div>
+            <div class="srow changed-add"><span class="lno">12</span><span>  &lt;/<span class="tok-kw">fieldset</span>&gt;</span></div>
+            <div class="srow changed-add"><span class="lno">13</span><span></span></div>
+            <div class="srow changed-add"><span class="lno">14</span><span>  &lt;<span class="tok-kw">fieldset</span>&gt;</span></div>
+            <div class="srow changed-add"><span class="lno">15</span><span>    &lt;<span class="tok-kw">legend</span>&gt;プロダクトアップデート&lt;/<span class="tok-kw">legend</span>&gt;</span></div>
+            <div class="srow changed-add"><span class="lno">16</span><span>    &lt;<span class="tok-kw">label</span>&gt;&lt;%= f.<span class="tok-fn">check_box</span> <span class="tok-sym">:product_update</span> %&gt; 新機能・改善のお知らせを受け取る&lt;/<span class="tok-kw">label</span>&gt;</span></div>
+            <div class="srow changed-add"><span class="lno">17</span><span>  &lt;/<span class="tok-kw">fieldset</span>&gt;</span></div>
+            <div class="srow changed-add"><span class="lno">18</span><span></span></div>
+            <div class="srow changed-add"><span class="lno">19</span><span>  &lt;<span class="tok-kw">p</span> class=<span class="tok-str">"locked"</span>&gt;セキュリティ通知は法令上オフにできません。&lt;/<span class="tok-kw">p</span>&gt;</span></div>
+            <div class="srow changed-add"><span class="lno">20</span><span></span></div>
+            <div class="srow changed-add"><span class="lno">21</span><span>  &lt;%= f.<span class="tok-fn">submit</span> <span class="tok-str">'保存する'</span> %&gt;</span></div>
+            <div class="srow changed-add"><span class="lno">22</span><span>&lt;% <span class="tok-kw">end</span> %&gt;</span></div>
+          </div>
+        </div>
+        <div class="diff-note">
+          <span class="label">UI</span>
+          <code>security</code> 用のチェックボックスは表示しない。代わりに固定文言を <code>p.locked</code> で出す。チェックボックスが存在しないことで「ユーザーには変更できない」を視覚的に示す。
+        </div>
+      </article>
+
+      <!-- ============================================================ -->
+      <!-- database                                                      -->
+      <!-- ============================================================ -->
+      <h3>database</h3>
+      <p>migration を新規作成、テーブル作成と既存ユーザーのバックフィルを行う。</p>
+
+      <article class="diff-card">
+        <div class="diff-header">
+          <span class="filename">db/migrate/20260514120000_create_notification_preferences.rb</span>
+          <span class="badge new">NEW FILE</span>
+          <span class="stat"><span class="added">+19</span> <span class="removed">−0</span></span>
+        </div>
+        <div class="split">
+          <div class="pane before">
+            <div class="pane-header">before — main</div>
+            <div class="srow empty"><span class="lno">·</span><span><span class="tok-com"># (このファイルは存在しない)</span></span></div>
+            <div class="srow empty"><span class="lno">·</span><span></span></div>
+            <div class="srow empty"><span class="lno">·</span><span></span></div>
+            <div class="srow empty"><span class="lno">·</span><span></span></div>
+            <div class="srow empty"><span class="lno">·</span><span></span></div>
+            <div class="srow empty"><span class="lno">·</span><span></span></div>
+            <div class="srow empty"><span class="lno">·</span><span></span></div>
+            <div class="srow empty"><span class="lno">·</span><span></span></div>
+            <div class="srow empty"><span class="lno">·</span><span></span></div>
+            <div class="srow empty"><span class="lno">·</span><span></span></div>
+            <div class="srow empty"><span class="lno">·</span><span></span></div>
+            <div class="srow empty"><span class="lno">·</span><span></span></div>
+            <div class="srow empty"><span class="lno">·</span><span></span></div>
+            <div class="srow empty"><span class="lno">·</span><span></span></div>
+            <div class="srow empty"><span class="lno">·</span><span></span></div>
+            <div class="srow empty"><span class="lno">·</span><span></span></div>
+            <div class="srow empty"><span class="lno">·</span><span></span></div>
+            <div class="srow empty"><span class="lno">·</span><span></span></div>
+            <div class="srow empty"><span class="lno">·</span><span></span></div>
+          </div>
+          <div class="pane after">
+            <div class="pane-header">after — feat/notification-preferences</div>
+            <div class="srow changed-add"><span class="lno">1</span><span><span class="tok-kw">class</span> <span class="tok-typ">CreateNotificationPreferences</span> &lt; <span class="tok-typ">ActiveRecord::Migration</span>[7.1]</span></div>
+            <div class="srow changed-add"><span class="lno">2</span><span>  <span class="tok-fn">disable_ddl_transaction!</span></span></div>
+            <div class="srow changed-add"><span class="lno">3</span><span></span></div>
+            <div class="srow changed-add"><span class="lno">4</span><span>  <span class="tok-kw">def</span> <span class="tok-fn">change</span></span></div>
+            <div class="srow changed-add"><span class="lno">5</span><span>    <span class="tok-fn">create_table</span> <span class="tok-sym">:notification_preferences</span> <span class="tok-kw">do</span> |t|</span></div>
+            <div class="srow changed-add"><span class="lno">6</span><span>      t.<span class="tok-fn">references</span> <span class="tok-sym">:user</span>, <span class="tok-sym">null:</span> <span class="tok-kw">false</span>, <span class="tok-sym">foreign_key:</span> <span class="tok-kw">true</span>, <span class="tok-sym">index:</span> { <span class="tok-sym">unique:</span> <span class="tok-kw">true</span> }</span></div>
+            <div class="srow changed-add"><span class="lno">7</span><span>      t.<span class="tok-fn">boolean</span> <span class="tok-sym">:marketing</span>,      <span class="tok-sym">null:</span> <span class="tok-kw">false</span>, <span class="tok-sym">default:</span> <span class="tok-kw">true</span></span></div>
+            <div class="srow changed-add"><span class="lno">8</span><span>      t.<span class="tok-fn">boolean</span> <span class="tok-sym">:product_update</span>, <span class="tok-sym">null:</span> <span class="tok-kw">false</span>, <span class="tok-sym">default:</span> <span class="tok-kw">true</span></span></div>
+            <div class="srow changed-add"><span class="lno">9</span><span>      t.<span class="tok-fn">boolean</span> <span class="tok-sym">:security</span>,       <span class="tok-sym">null:</span> <span class="tok-kw">false</span>, <span class="tok-sym">default:</span> <span class="tok-kw">true</span></span></div>
+            <div class="srow changed-add"><span class="lno">10</span><span>      t.<span class="tok-fn">timestamps</span></span></div>
+            <div class="srow changed-add"><span class="lno">11</span><span>    <span class="tok-kw">end</span></span></div>
+            <div class="srow changed-add"><span class="lno">12</span><span></span></div>
+            <div class="srow changed-add"><span class="lno">13</span><span>    <span class="tok-com"># 既存ユーザー向けバックフィル (バッチサイズで分割)</span></span></div>
+            <div class="srow changed-add"><span class="lno">14</span><span>    <span class="tok-typ">User</span>.<span class="tok-fn">in_batches</span>(<span class="tok-sym">of:</span> <span class="tok-num">1_000</span>) <span class="tok-kw">do</span> |batch|</span></div>
+            <div class="srow changed-add"><span class="lno">15</span><span>      <span class="tok-typ">NotificationPreference</span>.<span class="tok-fn">insert_all</span>(</span></div>
+            <div class="srow changed-add"><span class="lno">16</span><span>        batch.<span class="tok-fn">pluck</span>(<span class="tok-sym">:id</span>).<span class="tok-fn">map</span> { |id| { <span class="tok-sym">user_id:</span> id } }</span></div>
+            <div class="srow changed-add"><span class="lno">17</span><span>      )</span></div>
+            <div class="srow changed-add"><span class="lno">18</span><span>    <span class="tok-kw">end</span></span></div>
+            <div class="srow changed-add"><span class="lno">19</span><span>  <span class="tok-kw">end</span></span></div>
+          </div>
+        </div>
+        <div class="diff-note">
+          <span class="label">運用</span>
+          <code>disable_ddl_transaction!</code> によりロングトランザクションを避ける。<code>insert_all</code> はバリデーションを通らないため、デフォルト値 (DB 制約側) を必ず設定すること。
+        </div>
+      </article>
+
+      <!-- ============================================================ -->
+      <!-- その他 (routes / mailer 連携)                                 -->
+      <!-- ============================================================ -->
+      <h3>その他</h3>
+      <p><code>config/routes.rb</code> へルーティング追加と、既存 <code>UserMailer</code> から <code>NotificationPreference</code> を参照させる導線を入れる。</p>
+
+      <article class="diff-card">
+        <div class="diff-header">
+          <span class="filename">config/routes.rb</span>
+          <span class="stat"><span class="added">+3</span> <span class="removed">−0</span></span>
+        </div>
+        <div class="split">
+          <div class="pane before">
+            <div class="pane-header">before — main</div>
+            <div class="srow"><span class="lno">14</span><span>  <span class="tok-fn">namespace</span> <span class="tok-sym">:settings</span> <span class="tok-kw">do</span></span></div>
+            <div class="srow"><span class="lno">15</span><span>    <span class="tok-fn">resource</span> <span class="tok-sym">:profile</span>,  <span class="tok-sym">only:</span> %i[show update]</span></div>
+            <div class="srow"><span class="lno">16</span><span>    <span class="tok-fn">resource</span> <span class="tok-sym">:password</span>, <span class="tok-sym">only:</span> %i[show update]</span></div>
+            <div class="srow empty"><span class="lno">·</span><span></span></div>
+            <div class="srow empty"><span class="lno">·</span><span></span></div>
+            <div class="srow empty"><span class="lno">·</span><span></span></div>
+            <div class="srow"><span class="lno">17</span><span>  <span class="tok-kw">end</span></span></div>
+          </div>
+          <div class="pane after">
+            <div class="pane-header">after — feat/notification-preferences</div>
+            <div class="srow"><span class="lno">14</span><span>  <span class="tok-fn">namespace</span> <span class="tok-sym">:settings</span> <span class="tok-kw">do</span></span></div>
+            <div class="srow"><span class="lno">15</span><span>    <span class="tok-fn">resource</span> <span class="tok-sym">:profile</span>,  <span class="tok-sym">only:</span> %i[show update]</span></div>
+            <div class="srow"><span class="lno">16</span><span>    <span class="tok-fn">resource</span> <span class="tok-sym">:password</span>, <span class="tok-sym">only:</span> %i[show update]</span></div>
+            <div class="srow changed-add"><span class="lno">17</span><span>    <span class="ins"><span class="tok-fn">resource</span> <span class="tok-sym">:notification_preferences</span>,</span></span></div>
+            <div class="srow changed-add"><span class="lno">18</span><span>             <span class="tok-sym">only:</span> %i[show update],</span></div>
+            <div class="srow changed-add"><span class="lno">19</span><span>             <span class="tok-sym">controller:</span> <span class="tok-str">'notification_preferences'</span></span></div>
+            <div class="srow"><span class="lno">20</span><span>  <span class="tok-kw">end</span></span></div>
+          </div>
+        </div>
+      </article>
+
+      <article class="diff-card">
+        <div class="diff-header">
+          <span class="filename">app/mailers/user_mailer.rb</span>
+          <span class="stat"><span class="added">+6</span> <span class="removed">−1</span></span>
+        </div>
+        <div class="split">
+          <div class="pane before">
+            <div class="pane-header">before — main</div>
+            <div class="srow"><span class="lno">3</span><span>  <span class="tok-kw">def</span> <span class="tok-fn">marketing_digest</span>(user)</span></div>
+            <div class="srow"><span class="lno">4</span><span>    @user = user</span></div>
+            <div class="srow changed-del"><span class="lno">5</span><span>    <span class="tok-fn">mail</span>(<span class="tok-sym">to:</span> user.email, <span class="tok-sym">subject:</span> <span class="tok-str">'今週のおすすめ'</span>)</span></div>
+            <div class="srow empty"><span class="lno">·</span><span></span></div>
+            <div class="srow empty"><span class="lno">·</span><span></span></div>
+            <div class="srow empty"><span class="lno">·</span><span></span></div>
+            <div class="srow empty"><span class="lno">·</span><span></span></div>
+            <div class="srow empty"><span class="lno">·</span><span></span></div>
+            <div class="srow"><span class="lno">6</span><span>  <span class="tok-kw">end</span></span></div>
+          </div>
+          <div class="pane after">
+            <div class="pane-header">after — feat/notification-preferences</div>
+            <div class="srow"><span class="lno">3</span><span>  <span class="tok-kw">def</span> <span class="tok-fn">marketing_digest</span>(user)</span></div>
+            <div class="srow"><span class="lno">4</span><span>    @user = user</span></div>
+            <div class="srow changed-add"><span class="lno">5</span><span>    <span class="ins"><span class="tok-kw">return</span> <span class="tok-typ">Mail::Message</span>.<span class="tok-fn">new</span> <span class="tok-kw">unless</span> opted_in?(user)</span></span></div>
+            <div class="srow changed-add"><span class="lno">6</span><span></span></div>
+            <div class="srow changed-add"><span class="lno">7</span><span>    <span class="tok-fn">mail</span>(<span class="tok-sym">to:</span> user.email, <span class="tok-sym">subject:</span> <span class="tok-str">'今週のおすすめ'</span>)</span></div>
+            <div class="srow changed-add"><span class="lno">8</span><span>  <span class="tok-kw">end</span></span></div>
+            <div class="srow changed-add"><span class="lno">9</span><span></span></div>
+            <div class="srow changed-add"><span class="lno">10</span><span>  <span class="tok-kw">private</span></span></div>
+            <div class="srow changed-add"><span class="lno">11</span><span></span></div>
+            <div class="srow changed-add"><span class="lno">12</span><span>  <span class="tok-kw">def</span> <span class="tok-fn">opted_in?</span>(user) = user.notification_preference&amp;.marketing</span></div>
+          </div>
+        </div>
+        <div class="diff-note">
+          <span class="label">挙動</span>
+          opt-out 時には空の <code>Mail::Message</code> を返す。<code>deliver_later</code> 経由でも <code>perform_deliveries = false</code> で実送信は走らない (既存挙動と互換)。
+        </div>
+      </article>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- 禁則事項                                                        -->
+    <!-- ============================================================== -->
+    <section>
+      <h2>禁則事項</h2>
+      <ul class="task-list">
+        <li>
+          <span class="task-body"><strong>既存 <code>users</code> テーブルへのカラム追加で対応しない</strong>。今後の通知種別追加に備え、必ず別テーブルで管理する</span>
+        </li>
+        <li>
+          <span class="task-body"><strong>カラム名に <code>email_enabled</code> など媒体名を含めない</strong>。現状はメール/プッシュを横串で扱うため、通知の「種別」で切る</span>
+        </li>
+        <li>
+          <span class="task-body"><strong><code>security</code> 通知を OFF にする抜け道を作らない</strong>。コントローラ側 strong params でも除外、モデル側 validate でも弾く二重防御</span>
+        </li>
+        <li>
+          <span class="task-body"><strong>バックフィル時に通知メールを発火させない</strong>。<code>insert_all</code> を使い ActiveRecord コールバックを通さないこと</span>
+        </li>
+        <li>
+          <span class="task-body"><strong>フィーチャーフラグ未通過の状態で routes を全ユーザーに公開しない</strong>。<code>constraints</code> でフラグ判定を挟む</span>
+        </li>
+      </ul>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- リスク管理                                                      -->
+    <!-- ============================================================== -->
+    <section>
+      <h2>リスク管理</h2>
+      <table class="risk-table">
+        <thead>
+          <tr>
+            <th class="col-risk">リスク</th>
+            <th class="col-sev">度合</th>
+            <th class="col-cause">原因</th>
+            <th class="col-action">対策</th>
+            <th class="col-owner">担当</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="col-risk-cell" data-label="リスク">バックフィル中に <code>users</code> テーブルが長時間ロックされる</td>
+            <td data-label="度合"><span class="sev high">High</span></td>
+            <td data-label="原因">本番ユーザー数 ≒ 280 万。単一トランザクションで <code>insert_all</code> を回すと所要 10 分超</td>
+            <td data-label="対策"><code>disable_ddl_transaction!</code> + 1,000 件バッチ。実行は深夜帯、進捗を <code>JSONL</code> で出力</td>
+            <td data-label="担当">dev チーム</td>
+          </tr>
+          <tr>
+            <td class="col-risk-cell" data-label="リスク">opt-out 集中で <code>marketing</code> 系の配信実績が急減し売上に影響</td>
+            <td data-label="度合"><span class="sev mid">Middle</span></td>
+            <td data-label="原因">初期デフォルト値の方針が未決。Growth との合意もまだ</td>
+            <td data-label="対策">フィーチャーフラグで 5% → 25% → 100% の段階公開。各段でメール CTR を監視し閾値超過時は巻き戻し</td>
+            <td data-label="担当">Growth 連携</td>
+          </tr>
+          <tr>
+            <td class="col-risk-cell" data-label="リスク">既存の <code>UserMailer</code> のテストが opt-in 前提で書かれていて落ちる</td>
+            <td data-label="度合"><span class="sev mid">Middle</span></td>
+            <td data-label="原因"><code>marketing_digest</code> のテスト fixture に <code>notification_preference</code> が無い</td>
+            <td data-label="対策">fixture 一括更新 PR を先行マージ。CI で失敗パターンを事前に検出</td>
+            <td data-label="担当">dev チーム</td>
+          </tr>
+          <tr>
+            <td class="col-risk-cell" data-label="リスク">プッシュ通知側 (<code>PushDispatcher</code>) の改修漏れ</td>
+            <td data-label="度合"><span class="sev low">Low</span></td>
+            <td data-label="原因">本 PR ではメールのみ対応。プッシュは別 PR で連携予定</td>
+            <td data-label="対策">プッシュ改修 PR を本 PR と同じスプリント内に起票・追跡</td>
+            <td data-label="担当">dev チーム</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- 参照先                                                          -->
+    <!-- ============================================================== -->
+    <section>
+      <h2>参照先</h2>
+      <ul class="ref-list">
+        <li>
+          <span class="ref-kind">Issue</span>
+          <span class="ref-target">CORE-1842</span>
+          <span class="ref-note">「マーケメール停止導線の要望」CS からの集約チケット</span>
+        </li>
+        <li>
+          <span class="ref-kind">Issue</span>
+          <span class="ref-target">LEGAL-203</span>
+          <span class="ref-note">改正特定電子メール法対応 (法務発番、2026-06 期限)</span>
+        </li>
+        <li>
+          <span class="ref-kind">PR (参考)</span>
+          <span class="ref-target">#1284</span>
+          <span class="ref-note">過去のフィーチャーフラグ段階公開の前例 (UserProfile v2 ロールアウト)</span>
+        </li>
+        <li>
+          <span class="ref-kind">Doc</span>
+          <span class="ref-target">docs/architecture/mailer.md</span>
+          <span class="ref-note"><code>UserMailer</code> の opt-in 判定ポイント設計メモ</span>
+        </li>
+        <li>
+          <span class="ref-kind">Slack</span>
+          <span class="ref-target">#growth-ops</span>
+          <span class="ref-note">初期デフォルト値の方針議論スレッド (2026-05-12〜)</span>
+        </li>
+      </ul>
+    </section>
+
+  </div>
+</body>
+</html>

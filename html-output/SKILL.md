@@ -22,6 +22,7 @@ description: Output readable html from text, markdown or other format.
   * `plan`: task planning
   * `proposal`: SPIN proposal
   * `report`: reporting bug, incident
+  * `request`: task request (general or software-mvc)
 * [ ] When type matched nothing, out error "Your requirement is not covered" and stop workflow
 
 ### 2nd step
@@ -32,6 +33,7 @@ description: Output readable html from text, markdown or other format.
   * `plan`: `references/plan-*.html`
   * `proposal`: `references/proposal-*.html`
   * `report`: `references/report-*.html`
+  * `request`: `references/request-*.html`
 * [ ] Output html to specified path by user
   * If no target path, AskUserQuestion where to output
 
