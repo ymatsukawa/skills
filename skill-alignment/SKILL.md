@@ -5,12 +5,12 @@ description: Align understanding of skill between AI and user.
 
 # Skill alignment
 ## GOAL
-Align understanding of skill between you and user.
-If there is mismatch, adjust the skill with user.
+* Align understanding of skill between you and user.
+* If there is mismatch, adjust the skill with user.
 
 ## Why
 Users have bias that "skill" is "silver bullet".
-So, there are many gaps between expectation and result of coding agent.
+So, there are many gaps between expectation and result of AI.
 In order to reduce the gaps, alignment is required.
 
 ## Definition
@@ -19,7 +19,7 @@ Who uses skill.
 In this context, who calls you.
 
 **skill**:
-Coding agent skill. It's written in SKILL.md
+Skill of AI. It's written in SKILL.md
 
 ## Prohibition
 * Editing file except "skill rule" file or directory
@@ -32,7 +32,7 @@ The subagent has evaluation standard paper that uses after workflow.
 
 ```
 # Evaluation
-I'm agent who execute {skill}
+I'm agent who run {skill}
 
 ## Target
 **Path**:
@@ -63,26 +63,29 @@ I'm agent who execute {skill}
 ## Workflow
 **iteration-1**:
 * [ ] Receive skill from user
-  * **If skill is not specified, out error "skill is not specified", and stop workflow.**
-  * **If input is required the skill but not passed, out error "The skill required path/file", and stop workflow.**
+  * **If skill is not specified, out error "Skill is not specified", and stop workflow.**
+  * **In case skill requires "input" but not passed, out error "The skill required path/file", and stop workflow.**
 * [ ] Launch subagent "newcomer"
-* [ ] Confirm agent is new process
+* [ ] Confirm the agent is new process
 
 **iteration-2**:
-* [ ] Execute skill and evaluate by "newcomer"
-* [ ] "newcomer" should report as markdown
+* [ ] Execute and evaluate the skill by "newcomer"
+* [ ] Report by "newcomer" with standard paper
   * AskUserQuestion where to put file
-* [ ] AskUserQuestion where to fix
-  * Continue or break is first.
+* [ ] AskUserQuestion whether fix/modify is required after watched report
+  * Question: "continue or break"
 
-If continue iteration:
-* [ ] AskUserQuestion how to modify "Unclear" and "Self-judged"
-* [ ] After answer, launch new "newcomer" and pass answer info
-* [ ] Close old "newcomer" and iteration-2 is finished.
+If "continue" iteration:
+* [ ] AskUserQuestion how to fix/modify "Unclear" and "Self-judged"
+* After fix/modify:
+  * [ ] Close current "newcomer" subagent
+  * [ ] Confirm the agent process is closed
+  * [ ] Step back to iteration-1
 
-If break to iteration:
-* [ ] Close old "newcomer" and finish iteration-2
-* [ ] Notice user that "finished alignment"
+If "break" iteration:
+* [ ] Close current "newcomer" and finish iteration-2
+* [ ] Confirm the agent process is closed
+* [ ] Notice user that "Finished alignment"
 
 ## Remarks
 * Report output should be UTF-8
