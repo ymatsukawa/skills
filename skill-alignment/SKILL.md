@@ -85,7 +85,7 @@ If "break" iteration:
 * [ ] Do "Close current subagent process"
 * [ ] Notice user that "Finished alignment"
 
-**Close process**:
+**Close current subagent process**:
 * [ ] Close current "newcomer"
 * [ ] Confirm the agent process is closed
 
