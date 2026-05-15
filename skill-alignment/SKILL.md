@@ -78,14 +78,16 @@ I'm agent who run {skill}
 If "continue" iteration:
 * [ ] AskUserQuestion how to fix/modify "Unclear" and "Self-judged"
 * After fix/modify:
-  * [ ] Close current "newcomer" subagent
-  * [ ] Confirm the agent process is closed
+  * [ ] Do "Close current subagent process"
   * [ ] Step back to iteration-1
 
 If "break" iteration:
-* [ ] Close current "newcomer" and finish iteration-2
-* [ ] Confirm the agent process is closed
+* [ ] Do "Close current subagent process"
 * [ ] Notice user that "Finished alignment"
+
+**Close process**:
+* [ ] Close current "newcomer"
+* [ ] Confirm the agent process is closed
 
 ## Remarks
 * Report output should be UTF-8
