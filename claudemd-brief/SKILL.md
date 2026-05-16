@@ -49,7 +49,7 @@ See @./docs/arch/README.md for architect guidance.
 ```
 
 ### 4. Make as skill
-If it's domain knowledge or workflow that hat are only relevant sometimes, make it as skill. And refer from CLAUDE.md
+If it's domain knowledge or workflow that are only relevant sometimes, make it as skill. And refer from CLAUDE.md
 
 ## Workflow
 ### 1st step: setup
@@ -64,13 +64,13 @@ If it's domain knowledge or workflow that hat are only relevant sometimes, make 
 
 ### 3rd step: do "exclude"
 * [ ] From "Non-Specificity", remove information what claude already know.
-  * **Before remove, AskUserQuestion why it's not required**
+  * **Before remove, AskUserQuestion how to remove**
 * [ ] From "Non-Stability", put "mutable" info as link.
-  * **AskUserQuestion where is intent link**
+  * **AskUserQuestion where is intended link**
 * [ ] From "Non-Brevity", rewrite it brief without loosing original context.
 
 ### 4th step: make as skill
-* [ ] If specific section has domain knowledge or workflow, make it as skill
+* [ ] If specific section has domain knowledge or workflow, create it as skill
 * [ ] After creation, in CLAUDE.md, write reference to skill
   * ex) `use /review-skill for code review`
 
@@ -80,5 +80,5 @@ If it's domain knowledge or workflow that hat are only relevant sometimes, make 
 * [ ] Set path with path syntax
 
 ## References
-* Write an effective CLAUDE.md
+* "Write an effective CLAUDE.md"
   * https://code.claude.com/docs/en/best-practices#write-an-effective-claude-md
