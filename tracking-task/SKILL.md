@@ -86,5 +86,5 @@ Basic iteration is "Run task" → "Record task"
   * [ ] Check finished tasks
     * If it's out of tasks, append item to "Tasks"
   * [ ] Update "Progress"
-* [ ] Just message "Any progress about unresolved? or any extra order?"
+* [ ] Ask message like "Any progress about unresolved? or any extra order?"
   * Wait next instructions
