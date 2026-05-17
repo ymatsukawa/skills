@@ -1,12 +1,15 @@
 ---
 name: tracking-task
-description: Tracking task in running task
+description: Tracking running task
 ---
 
 # Tracking task
 ## GOAL
+Tracking tasks in order to understand progress.
 
 ## Why
+In many cases, "task" has complex context and not finished in one instruction.
+So "tracking" is needed for true completion of the task.
 
 ## Prerequisite
 This skill requires "task request" sheet or paper. It should include below items.
