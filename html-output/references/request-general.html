@@ -393,10 +393,10 @@
     </header>
 
     <!-- ============================================================== -->
-    <!-- やりたいこと                                                    -->
+    <!-- ゴール                                                          -->
     <!-- ============================================================== -->
     <section>
-      <h2>やりたいこと</h2>
+      <h2>ゴール</h2>
       <ul class="task-list">
         <li>
           <span class="task-body">A 社が経理 SaaS への取り込みに使用している「月次請求 CSV」のフォーマットを、A 社の指定スキーマに合わせて切り替え可能にする</span>
@@ -429,25 +429,54 @@
     </section>
 
     <!-- ============================================================== -->
-    <!-- 実施事項: 概要                                                  -->
+    <!-- 現状                                                            -->
     <!-- ============================================================== -->
     <section>
-      <h2>実施事項: 概要</h2>
-
-      <h3>前提条件</h3>
+      <h2>現状</h2>
       <ul class="task-list">
         <li>
-          <span class="task-body">A 社の契約上、フォーマット個別対応の SLA は定義されていない。今回はベストエフォートだが、5 営業日以内の一次回答を社内目標とする</span>
+          <span class="task-body">既存 CSV 出力は全顧客共通のフォーマットで稼働しており、A 社の経理 SaaS が要求するスキーマと不一致。A 社経理は手動補正で取り込んでおり業務負荷が高い</span>
         </li>
         <li>
-          <span class="task-body">既存 CSV 出力は全顧客共通のフォーマットで稼働しており、A 社のためだけにグローバル変更は行わない</span>
+          <span class="task-body">本要望は CS 経由 (Zendesk Ticket #4821) で受け付けたばかりで、Sales / dev への正式ハンドオフは未実施。情報は CS 内に閉じている</span>
         </li>
         <li>
-          <span class="task-body">本対応の起点は CS 経由の問い合わせ (Zendesk Ticket #4821)。元の要望文・添付サンプルは Zendesk 内が一次情報</span>
+          <span class="task-body">過去事例では CS → Sales → dev のハンドオフが途中で切れ、A 社側で 2 週間放置された経緯がある。同じ轍を踏みやすい体制</span>
+        </li>
+        <li>
+          <span class="task-body">同種要望が B 社・C 社からも上がっているが、各部署の認識が揃っておらず横展開判断ができない状態</span>
         </li>
       </ul>
+    </section>
 
-      <h3>確定</h3>
+    <!-- ============================================================== -->
+    <!-- 理想                                                            -->
+    <!-- ============================================================== -->
+    <section>
+      <h2>理想</h2>
+      <ul class="task-list">
+        <li>
+          <span class="task-body">テナント単位でフォーマット切替可能な仕組みが dev 側に実装され、A 社のみ新フォーマットに切り替わっている状態</span>
+        </li>
+        <li>
+          <span class="task-body">2026-05-21 (木) 17:00 までに A 社へ一次回答が完了し、設計案・想定リリース時期が共有されている</span>
+        </li>
+        <li>
+          <span class="task-body">CS / Sales / dev の全関係者が <code>#cs-a-company</code> private channel を一次情報源として参照しており、対外連絡の齟齬がない</span>
+        </li>
+        <li>
+          <span class="task-body">テナント切替方式が横展開可能なテンプレとして整理され、B 社・C 社の同種要望にもそのまま適用できる状態</span>
+        </li>
+      </ul>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- 決議事項                                                        -->
+    <!-- ============================================================== -->
+    <section>
+      <h2>決議事項</h2>
+
+      <h3>決定済</h3>
       <ul class="task-list">
         <li>
           <span class="task-body">対応方針は「テナント単位でフォーマット切替できる仕組みを dev が用意し、A 社のみ新フォーマットに切り替える」</span>
@@ -478,12 +507,68 @@
     </section>
 
     <!-- ============================================================== -->
-    <!-- 実施事項: 詳細                                                  -->
+    <!-- タスク一覧                                                      -->
     <!-- ============================================================== -->
     <section>
-      <h2>実施事項: 詳細</h2>
+      <h2>タスク一覧</h2>
+      <ol class="steps">
+        <li>
+          <span class="role cs">CS</span>
+          <span class="step-body">
+            <span class="step-title">問い合わせ内容の整理と要件構造化</span>
+            <span class="step-note">山田 (CS) / 2026-05-15 (水) 12:00</span>
+          </span>
+        </li>
+        <li>
+          <span class="role cs">CS</span>
+          <span class="step-body">
+            <span class="step-title">Sales へのハンドオフ会</span>
+            <span class="step-note">山田 (CS) → 鈴木 (Sales) / 2026-05-15 (水) 17:00</span>
+          </span>
+        </li>
+        <li>
+          <span class="role sales">SALES</span>
+          <span class="step-body">
+            <span class="step-title">商務面の確認と A 社合意の取り付け</span>
+            <span class="step-note">鈴木 (Sales) / 2026-05-18 (月) 中</span>
+          </span>
+        </li>
+        <li>
+          <span class="role sales">SALES</span>
+          <span class="step-body">
+            <span class="step-title">dev チームへの要件提出</span>
+            <span class="step-note">鈴木 (Sales) → 佐藤 (dev PM) / 2026-05-19 (火) 10:00</span>
+          </span>
+        </li>
+        <li>
+          <span class="role dev">DEV</span>
+          <span class="step-body">
+            <span class="step-title">実装方針の見積もりと一次回答</span>
+            <span class="step-note">佐藤 (dev PM) / 2026-05-20 (水) 10:00</span>
+          </span>
+        </li>
+        <li>
+          <span class="role cs">CS</span>
+          <span class="step-body">
+            <span class="step-title">A 社への一次回答</span>
+            <span class="step-note">山田 (CS) / 2026-05-21 (木) 17:00</span>
+          </span>
+        </li>
+        <li>
+          <span class="role dev">DEV</span>
+          <span class="step-body">
+            <span class="step-title">実装・QA・段階リリース</span>
+            <span class="step-note">佐藤 (dev PM) ・ 山田 (CS) ・ 鈴木 (Sales) / 2026-05-29 目標</span>
+          </span>
+        </li>
+      </ol>
+    </section>
 
-      <h3>手順</h3>
+    <!-- ============================================================== -->
+    <!-- タスク詳細                                                      -->
+    <!-- ============================================================== -->
+    <section>
+      <h2>タスク詳細</h2>
       <ol class="steps">
         <li>
           <span class="role cs">CS</span>
@@ -542,6 +627,50 @@
           </span>
         </li>
       </ol>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- 禁則事項                                                        -->
+    <!-- ============================================================== -->
+    <section>
+      <h2>禁則事項</h2>
+      <ul class="task-list">
+        <li>
+          <span class="task-body"><strong>CS が単独で dev に直接ハンドオフしない</strong>。商務面の確認が抜けると追加費用の判断や契約解釈で齟齬が生じるため、必ず Sales を経由する</span>
+        </li>
+        <li>
+          <span class="task-body"><strong>Sales が A 社にリリース日を確約しない</strong>。dev のスプリント枠が未確定の段階で日付を出すと、ずれた際の信頼毀損が大きい</span>
+        </li>
+        <li>
+          <span class="task-body"><strong>dev が「A 社専用フォーマット」を直接ハードコードしない</strong>。あくまでテナント設定でスイッチする実装にし、横展開を可能にしておく</span>
+        </li>
+        <li>
+          <span class="task-body"><strong>本件のやりとりを DM や個人メールで完結させない</strong>。CS / Sales / dev のどの部署からも追えるよう <code>#cs-a-company</code> および Salesforce / Linear に必ず記録する</span>
+        </li>
+        <li>
+          <span class="task-body"><strong>B 社・C 社へ「同じ要望なら対応します」と先回りで案内しない</strong>。横展開の方針が未決のため、判断確定までは A 社のみの個別対応として扱う</span>
+        </li>
+      </ul>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- 備考                                                            -->
+    <!-- ============================================================== -->
+    <section>
+      <h2>備考</h2>
+
+      <h3>前提条件</h3>
+      <ul class="task-list">
+        <li>
+          <span class="task-body">A 社の契約上、フォーマット個別対応の SLA は定義されていない。今回はベストエフォートだが、5 営業日以内の一次回答を社内目標とする</span>
+        </li>
+        <li>
+          <span class="task-body">既存 CSV 出力は全顧客共通のフォーマットで稼働しており、A 社のためだけにグローバル変更は行わない</span>
+        </li>
+        <li>
+          <span class="task-body">本対応の起点は CS 経由の問い合わせ (Zendesk Ticket #4821)。元の要望文・添付サンプルは Zendesk 内が一次情報</span>
+        </li>
+      </ul>
 
       <h3>報告先</h3>
       <table class="report-table">
@@ -586,37 +715,8 @@
           </tr>
         </tbody>
       </table>
-    </section>
 
-    <!-- ============================================================== -->
-    <!-- 禁則事項                                                        -->
-    <!-- ============================================================== -->
-    <section>
-      <h2>禁則事項</h2>
-      <ul class="task-list">
-        <li>
-          <span class="task-body"><strong>CS が単独で dev に直接ハンドオフしない</strong>。商務面の確認が抜けると追加費用の判断や契約解釈で齟齬が生じるため、必ず Sales を経由する</span>
-        </li>
-        <li>
-          <span class="task-body"><strong>Sales が A 社にリリース日を確約しない</strong>。dev のスプリント枠が未確定の段階で日付を出すと、ずれた際の信頼毀損が大きい</span>
-        </li>
-        <li>
-          <span class="task-body"><strong>dev が「A 社専用フォーマット」を直接ハードコードしない</strong>。あくまでテナント設定でスイッチする実装にし、横展開を可能にしておく</span>
-        </li>
-        <li>
-          <span class="task-body"><strong>本件のやりとりを DM や個人メールで完結させない</strong>。CS / Sales / dev のどの部署からも追えるよう <code>#cs-a-company</code> および Salesforce / Linear に必ず記録する</span>
-        </li>
-        <li>
-          <span class="task-body"><strong>B 社・C 社へ「同じ要望なら対応します」と先回りで案内しない</strong>。横展開の方針が未決のため、判断確定までは A 社のみの個別対応として扱う</span>
-        </li>
-      </ul>
-    </section>
-
-    <!-- ============================================================== -->
-    <!-- リスク管理                                                      -->
-    <!-- ============================================================== -->
-    <section>
-      <h2>リスク管理</h2>
+      <h3>リスク管理</h3>
       <table class="risk-table">
         <thead>
           <tr>

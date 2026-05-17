@@ -451,10 +451,10 @@
     </header>
 
     <!-- ============================================================== -->
-    <!-- やりたいこと                                                    -->
+    <!-- ゴール                                                          -->
     <!-- ============================================================== -->
     <section>
-      <h2>やりたいこと</h2>
+      <h2>ゴール</h2>
       <ul class="task-list">
         <li>
           <span class="task-body">ユーザーごとにメール / プッシュ / アプリ内通知の受信可否を設定できる画面を <code>/settings/notifications</code> に追加する</span>
@@ -487,25 +487,60 @@
     </section>
 
     <!-- ============================================================== -->
-    <!-- 実施事項: 概要                                                  -->
+    <!-- 現状                                                            -->
     <!-- ============================================================== -->
     <section>
-      <h2>実施事項: 概要</h2>
-
-      <h3>前提条件</h3>
+      <h2>現状</h2>
       <ul class="task-list">
         <li>
-          <span class="task-body">対象ブランチは <code>main</code>。リリースはフィーチャーフラグ <code>notification_preferences_v1</code> 配下で段階公開</span>
+          <span class="task-body">ユーザーが自分で通知受信可否を変更する導線が存在しない。停止希望はカスタマーサポート問い合わせを経由するしかなく、CS が DB を直接更新して凌いでいる (直近 1 ヶ月で 18 件)</span>
         </li>
         <li>
-          <span class="task-body">Ruby 3.3 / Rails 7.1。<code>devise</code> による認証済みユーザー前提</span>
+          <span class="task-body"><code>users</code> テーブルには通知関連カラムが一切なく、種別ごとの受信状態を保存する仕組みもない</span>
         </li>
         <li>
-          <span class="task-body">既存の <code>users</code> テーブルには通知関連カラムを持たない。新規テーブルとして切り出す</span>
+          <span class="task-body">既存の <code>UserMailer</code> / <code>PushDispatcher</code> は opt-in 判定をせず、対象ユーザー全員に送信する実装になっている</span>
+        </li>
+        <li>
+          <span class="task-body">2026-06 施行の改正特定電子メール法に対し、ユーザー側で受信解除できる手段がない状態。法令対応が未着手</span>
+        </li>
+        <li>
+          <span class="task-body">解約アンケートで「通知が多すぎる」が直近四半期 7.2%。通知種別の粒度を切れないため、ピンポイントなオフが提供できていない</span>
         </li>
       </ul>
+    </section>
 
-      <h3>確定</h3>
+    <!-- ============================================================== -->
+    <!-- 理想                                                            -->
+    <!-- ============================================================== -->
+    <section>
+      <h2>理想</h2>
+      <ul class="task-list">
+        <li>
+          <span class="task-body"><code>/settings/notifications</code> 画面でユーザー自身が <code>marketing</code> / <code>product_update</code> の受信可否を種別単位で切替できる</span>
+        </li>
+        <li>
+          <span class="task-body"><code>security</code> 通知は法令上 OFF にできず、UI 上もチェックボックスが存在しない (固定文言のみ表示)。コントローラ / モデル両層で OFF を弾く二重防御</span>
+        </li>
+        <li>
+          <span class="task-body"><code>UserMailer</code> / <code>PushDispatcher</code> が送信前に <code>NotificationPreference</code> を参照し、opt-out ユーザーには配信しない</span>
+        </li>
+        <li>
+          <span class="task-body">改正特定電子メール法 (2026-06 施行) の要件を満たす導線が提供されており、CS の手動 DB 更新が不要になっている</span>
+        </li>
+        <li>
+          <span class="task-body">フィーチャーフラグ <code>notification_preferences_v1</code> の段階公開 (5% → 25% → 100%) でリリースされ、配信実績の急減リスクが監視されている</span>
+        </li>
+      </ul>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- 決議事項                                                        -->
+    <!-- ============================================================== -->
+    <section>
+      <h2>決議事項</h2>
+
+      <h3>決定済</h3>
       <ul class="task-list">
         <li>
           <span class="task-body">テーブル名は <code>notification_preferences</code>、<code>user_id</code> は一意制約 (1 ユーザー 1 レコード)</span>
@@ -533,10 +568,34 @@
     </section>
 
     <!-- ============================================================== -->
-    <!-- 実施事項: 詳細 (MVC)                                            -->
+    <!-- タスク一覧                                                      -->
     <!-- ============================================================== -->
     <section>
-      <h2>実施事項: 詳細</h2>
+      <h2>タスク一覧</h2>
+      <ul class="task-list">
+        <li>
+          <span class="task-body"><strong>controller</strong> — <code>Settings::NotificationPreferencesController</code> を新規作成 (<code>show</code> / <code>update</code> の 2 アクション)<br><span class="note">担当: dev チーム / フィーチャーフラグ <code>notification_preferences_v1</code> 配下</span></span>
+        </li>
+        <li>
+          <span class="task-body"><strong>model</strong> — <code>NotificationPreference</code> モデル新規 + <code>User</code> に <code>has_one</code> 関連を追加<br><span class="note">担当: dev チーム / <code>security</code> 強制 ON のバリデーション込み</span></span>
+        </li>
+        <li>
+          <span class="task-body"><strong>view</strong> — <code>app/views/settings/notification_preferences/show.html.erb</code> を新規追加。<code>SettingsLayout</code> 流用<br><span class="note">担当: dev チーム / <code>security</code> はチェックボックスを表示しない</span></span>
+        </li>
+        <li>
+          <span class="task-body"><strong>database</strong> — migration <code>20260514120000_create_notification_preferences</code> を新規。既存ユーザーへのバックフィルを <code>insert_all</code> + 1,000 件バッチで実施<br><span class="note">担当: dev チーム / 実行は深夜帯</span></span>
+        </li>
+        <li>
+          <span class="task-body"><strong>その他 (routes / mailer 連携)</strong> — <code>config/routes.rb</code> に resource 追加、<code>UserMailer#marketing_digest</code> から <code>opted_in?</code> 経由で参照<br><span class="note">担当: dev チーム / プッシュ側 (<code>PushDispatcher</code>) は別 PR</span></span>
+        </li>
+      </ul>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- タスク詳細 (MVC)                                                -->
+    <!-- ============================================================== -->
+    <section>
+      <h2>タスク詳細</h2>
 
       <!-- ============================================================ -->
       <!-- controller                                                    -->
@@ -931,10 +990,25 @@
     </section>
 
     <!-- ============================================================== -->
-    <!-- リスク管理                                                      -->
+    <!-- 備考                                                            -->
     <!-- ============================================================== -->
     <section>
-      <h2>リスク管理</h2>
+      <h2>備考</h2>
+
+      <h3>前提条件</h3>
+      <ul class="task-list">
+        <li>
+          <span class="task-body">対象ブランチは <code>main</code>。リリースはフィーチャーフラグ <code>notification_preferences_v1</code> 配下で段階公開</span>
+        </li>
+        <li>
+          <span class="task-body">Ruby 3.3 / Rails 7.1。<code>devise</code> による認証済みユーザー前提</span>
+        </li>
+        <li>
+          <span class="task-body">既存の <code>users</code> テーブルには通知関連カラムを持たない。新規テーブルとして切り出す</span>
+        </li>
+      </ul>
+
+      <h3>リスク管理</h3>
       <table class="risk-table">
         <thead>
           <tr>
