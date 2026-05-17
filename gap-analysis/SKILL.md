@@ -24,11 +24,6 @@ In other words, this is "problem".
 When task(s) is finished, problem is solved.
 In other words, ToBe is achieved.
 
-**feature(s)**:
-What it is.
-This is from the user's point of view.
-In other words, the basic specification without technical terms.
-
 ## Prohibition
 * Read files and directories that is pointed by `.gitignore`
 * Editing existing files
@@ -55,11 +50,21 @@ There are mainly two steps.
   * Format follows "Output format"
   * When user does not specify path, AskUserQuestion where to out
 
+### (optional) 4th step - Reinforce items
+* [ ] Ask user whether add belows by AskUserQuestion
+  * Prohibition
+  * Decisions(Resolved and Unresolved)
+  * Considerations
+
+If answer is "add":
+* [ ] Insert sections after "Problem" before "Task"
+  * Read format `references/reinforcement.md`
+
 **Output format**:
 Decide based on following cases.
 
 * (1) Software feature
-  * Read: `references/software-feature.md`
+  * Read: `references/software-feature-case.md`
 * (2) General case
   * If none of the above applies
   * Read: `references/general-case.md`
