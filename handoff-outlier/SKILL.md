@@ -28,7 +28,7 @@ In order to decrease the pain as possible, this skill captures and explicitly wr
 
 ## Workflow
 ### Step 1: Setup
-* [ ] Receive target where to search, file? directory? around repository?
+* [ ] Receive target where to search. File? Directory? Around repository?
   * **If target is not passed, out error "Handoff target is not specified." and stop workflow"**
 
 ### Step 2: Scan "main convention"
@@ -44,19 +44,19 @@ In order to decrease the pain as possible, this skill captures and explicitly wr
       * Ansible?
       * Then, what's the version?
     * etc.
-  * [ ] Also understand depending "external module"
+  * [ ] Also understand "external module" which main convention depends on.
     * Library?
     * External service?
     * etc.
 * [ ] After scan, memory them for after workflow
 
 ### Step 3: Find "outlier"
-* [ ] Find out outlier
-  * Standard is written in "Standard of 'outlier'"
+* [ ] Find out outliers
+  * Watch "standard of outlier" on section "Definition"
 * [ ] Then group them to categories
 
 ### Step 4: Write out outlier
-* [ ] Write outlier ot specified path
+* [ ] Write outlier at specified path
   * Format is below "Output format"
   * If not received path, AskUserQuestion where to out
 
@@ -104,5 +104,5 @@ Anything below is an outlier.
 ## 7. External Dependencies
 
 ## Cross-cutting notes (optional)
-- {anything that spans multiple categories, kept short}
+- {anything that lurks multiple categories, kept short}
 ```
