@@ -1,6 +1,19 @@
 # skills
 Coding agent skills optimized for claude code.
 
+## Skills
+
+| skill | type |
+| -- | -- |
+| [claudemd-brief](./claudemd-brief/SKILL.md)   | optimization  |
+| [gap-analysis](./gap-analysis/SKILL.md)       | analysis      |
+| [handoff-outlier](./handoff-outlier/SKILL.md) | analysis      |
+| [html-output](./html-output/SKILL.md)         | documentation |
+| [skill-alignment](./skill-alignment/SKILL.md) | verification  |
+| [tracking-task](./tracking-task/SKILL.md)     | management    |
+
+[__commands](./__commands/) are support tool.
+
 ## Development policy
 > Good Skills are concise, well-structured, and tested with real usage.
 
