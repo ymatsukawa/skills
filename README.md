@@ -5,12 +5,15 @@ Coding agent skills optimized for claude code.
 
 | skill | type |
 | -- | -- |
-| [claudemd-brief](./claudemd-brief/SKILL.md)   | optimization  |
-| [gap-analysis](./gap-analysis/SKILL.md)       | analysis      |
-| [handoff-outlier](./handoff-outlier/SKILL.md) | analysis      |
-| [html-output](./html-output/SKILL.md)         | documentation |
-| [skill-alignment](./skill-alignment/SKILL.md) | verification  |
-| [tracking-task](./tracking-task/SKILL.md)     | management    |
+| [claudemd-brief](./claudemd-brief/SKILL.md)       | optimization  |
+| [gap-analysis](./gap-analysis/SKILL.md)           | analysis      |
+| [handoff-outlier](./handoff-outlier/SKILL.md)     | analysis      |
+| [impact-analysis](./impact-analysis/SKILL.md)     | analysis      |
+| [html-output](./html-output/SKILL.md)             | documentation |
+| [skill-alignment](./skill-alignment/SKILL.md)     | verification  |
+| [tracking-task](./tracking-task/SKILL.md)         | management    |
+| [refactor-standard](./refactor-standard/SKILL.md) | development   |
+| [unit-test-plan](./unit-test-plan/SKILL.md)       | development   |
 
 [__commands](./__commands/) are support tool.
 
