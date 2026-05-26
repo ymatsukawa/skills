@@ -1,0 +1,28 @@
+{
+	"skill-frame": {
+  "prefix": "skillframe",
+  "body":[
+    "# Title",
+    "## GOAL",
+    "",
+    "## Why",
+    "",
+    "## Prohibition",
+    "",
+    "## Workflow",
+    "### step1: ...",
+    "* [ ] ",
+    "* [ ] ",
+    "",
+    "### step2: ...",
+    "* [ ] ",
+    "* [ ] ",
+    "",
+    "### step3: ...",
+    "* [ ] ",
+    "* [ ] ",
+    "",
+  ],
+  "description": "claude skill framework",
+  "isFileTemplate": true
+}
