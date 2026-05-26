@@ -22,7 +22,7 @@ remarks:
 * acceptance test: Verifying user's expectation
 
 **standard of unit test**:
-
+Read: `references/unit-test-standard.md`
 
 **over-testing**:
 Tests that produces no value for developers and users of service.
