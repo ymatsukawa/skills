@@ -1,19 +1,23 @@
 # skills
-Coding agent skills optimized for claude code.
 
-## Skills
+**Have you examined for yourself?**
+
+## Contents
+
+Coding agent skills optimized for claude code.
 
 | skill | type |
 | -- | -- |
-| [claudemd-brief](./claudemd-brief/SKILL.md)       | optimization  |
-| [gap-analysis](./gap-analysis/SKILL.md)           | analysis      |
-| [handoff-outlier](./handoff-outlier/SKILL.md)     | analysis      |
-| [impact-analysis](./impact-analysis/SKILL.md)     | analysis      |
-| [html-output](./html-output/SKILL.md)             | documentation |
-| [skill-alignment](./skill-alignment/SKILL.md)     | verification  |
-| [tracking-task](./tracking-task/SKILL.md)         | management    |
-| [refactor-standard](./refactor-standard/SKILL.md) | development   |
-| [unit-test-plan](./unit-test-plan/SKILL.md)       | development   |
+| [claudemd-brief](./claudemd-brief/SKILL.md)         | optimization  |
+| [gap-analysis](./gap-analysis/SKILL.md)             | analysis      |
+| [handoff-outlier](./handoff-outlier/SKILL.md)       | analysis      |
+| [impact-analysis](./impact-analysis/SKILL.md)       | analysis      |
+| [investigate-reason](./investigate-reason/SKILL.md) | analysis      |
+| [html-output](./html-output/SKILL.md)               | documentation |
+| [skill-alignment](./skill-alignment/SKILL.md)       | verification  |
+| [tracking-task](./tracking-task/SKILL.md)           | management    |
+| [refactor-standard](./refactor-standard/SKILL.md)   | development   |
+| [unit-test-plan](./unit-test-plan/SKILL.md)         | development   |
 
 [__commands](./__commands/) are support tool.
 
