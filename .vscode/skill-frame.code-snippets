@@ -2,7 +2,12 @@
 	"skill-frame": {
   "prefix": "skillframe",
   "body":[
-    "# Title",
+    "---",
+    "name: TBD",
+    "description: TBD",
+    "---",
+    "",
+    "# {Title}",
     "## GOAL",
     "",
     "## Why",

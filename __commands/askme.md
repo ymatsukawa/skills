@@ -1,1 +1,1 @@
-Ask me question by AksUserQuestion for max 4 times.
+AksUserQuestion for max 4 times.
