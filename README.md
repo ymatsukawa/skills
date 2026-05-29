@@ -13,6 +13,7 @@ Coding agent skills optimized for claude code.
 | [handoff-outlier](./handoff-outlier/SKILL.md)       | analysis      |
 | [impact-analysis](./impact-analysis/SKILL.md)       | analysis      |
 | [investigate-reason](./investigate-reason/SKILL.md) | analysis      |
+| [review-investigate](./review-investigate/SKILL.md) | review        |
 | [html-output](./html-output/SKILL.md)               | documentation |
 | [skill-alignment](./skill-alignment/SKILL.md)       | verification  |
 | [tracking-task](./tracking-task/SKILL.md)           | management    |

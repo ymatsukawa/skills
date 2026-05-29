@@ -1,5 +1,5 @@
 ---
-name: investigate reason
+name: investigate-reason
 description: Investigate root reason of problem.
 ---
 
