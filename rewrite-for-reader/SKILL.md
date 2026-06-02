@@ -1,14 +1,14 @@
 ---
-name: write-for-reader
+name: rewrite-for-reader
 description: Rewrite it for reader.
 ---
 
-# Write for reader
+# Rewrite for reader
 ## GOAL
-Write content for "reader" not for writer.
+Rewrite content for "reader" not for writer.
 
 ## Why
-Many writing is written for "writer".
+Many writing exists for "writer".
 
 So, it's hard to read and "understanding and acting".
 
