@@ -29,9 +29,9 @@ For example:
 * Checking value of array
 * Checking error "process" of server
 
-These are not worthless for the business and user.
+These are worthless for the business and user.
 
-**scoped out test**:
+**out of testing**:
 Thinking about belows test pattern. They are in scope of "system test"
 * Load test
 * Long running test
@@ -43,7 +43,7 @@ Thinking about belows test pattern. They are in scope of "system test"
 
 ## Workflow
 ### step-1: Setup
-* [ ] Receive test target(s) of source code or design that can be understood "system behavior"
+* [ ] Receive source code, design docs or spec docs that tells "system behavior"
   * **If not specified target(s), out error like "Cannot process. Pass target source or design." and stop workflow**
 * [ ] Scan target and understand content.
   * If any unclearness, AskUserQuestion until no vague.
@@ -54,9 +54,9 @@ Thinking about belows test pattern. They are in scope of "system test"
 
 **"standard of acceptance test"**:
 * Avoid "worthless-testing"
-* Scope should not include "scoped out test"
+* Scope should not include "out of testing"
 
-**"Gherkin style**:
+**"Gherkin style"**:
 ```markdown
 # Valid Scenarios
 ## Feature: Post blog as member

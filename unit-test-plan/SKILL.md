@@ -32,7 +32,7 @@ In another word, "test for test".
 For example, when checking element of array integer which is strictly typed, verifying element type is not hash or custom class.
 
 
-**scoped out test**:
+**out of test**:
 About belows test pattern. They are not unit test scope.
 * Load test: Needs mass data; unit tests should be light.
 * Long running test: Takes long; unit tests should be short.
@@ -51,7 +51,7 @@ About belows test pattern. They are not unit test scope.
 
 ### step-2: plan by standard
 * [ ] With "standard of unit test", create plan how to unit test
-  * Remember, **AVOID 'over-testing' and 'scoped out test'**
+  * Remember, **AVOID 'over-testing' and 'out of testing'**
 
 ### step-3: pass plan to user
 * [ ] Pass plan result to user
