@@ -8,11 +8,11 @@ description: Rewrite it for reader.
 Rewrite content for "reader" not for writer.
 
 ## Why
-Many writing exists for "writer".
+Many writing is for "writer".
 
-So, it's hard to read and "understanding and acting".
+So, it's hard to read and "understanding and acting" for "reader".
 
-This skill supports to update content for the "reader".
+This skill supports to rewrite content for the "reader".
 
 ## Prohibition
 * Rewriting except target file(s).
@@ -26,8 +26,8 @@ This skill supports to update content for the "reader".
 ### step2: Ask goal of writing
 * [ ] AskUserQuestion that what is the goal and purpose of the written content.
 
-### step2: Plan simplify
-* [ ] With "write-for-reader", plan how to update.
+### step2: Plan how to rewrite
+* [ ] Plan how to update by "write-for-reader".
 
 "write-for-reader":
 Refer: `references/write-for-reader.md`
