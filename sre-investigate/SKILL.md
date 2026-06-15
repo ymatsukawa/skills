@@ -47,4 +47,4 @@ In order to get first step, this skill investigates why/what/how build the relia
 ```
 
 ## Meta Info
-* This skill is recommended to apply IaaS code; Terraform, CloudFormation, Ansible or etc.
+* This skill is recommended to apply IaC code; Terraform, CloudFormation, Ansible or etc.
