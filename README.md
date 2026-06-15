@@ -21,6 +21,7 @@ Coding agent skills optimized for claude code.
 | [refactor-standard](./refactor-standard/SKILL.md)                        | development   |
 | [acceptance-scenario-creation](./acceptance-scenario-creation/SKILL.md)  | test          |
 | [unit-test-plan](./unit-test-plan/SKILL.md)                              | test          |
+| [sre-investigate](./sre-investigate/SKILL.md)                            | maintenance   |
 
 [__commands](./__commands/) are support tool.
 
