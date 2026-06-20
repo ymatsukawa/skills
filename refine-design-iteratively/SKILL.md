@@ -10,9 +10,9 @@ Refine target design iteratively until user get satisfied.
 ## Why
 Designing with AI and user is "one round trip" in other word, one way question and just answer.
 
-It's not considered that user's full thought.
+It's not considered user's full thought.
 
-In order to input user as human's intention, continue iteration for refinement.
+In order to input user's intention, continue iteration for refinement.
 
 ## Prohibition
 * `git add` and `git commit`
