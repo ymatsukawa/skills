@@ -21,6 +21,7 @@ Coding agent skills optimized for claude code.
 | [refine-design-iteratively](./refine-design-iteratively/SKILL.md)        | design        |
 | [refactor-standard](./refactor-standard/SKILL.md)                        | development   |
 | [acceptance-scenario-creation](./acceptance-scenario-creation/SKILL.md)  | test          |
+| [characterization-test-plan](./characterization-test-plan/SKILL.md)      | test          |
 | [unit-test-plan](./unit-test-plan/SKILL.md)                              | test          |
 | [sre-investigate](./sre-investigate/SKILL.md)                            | maintenance   |
 
