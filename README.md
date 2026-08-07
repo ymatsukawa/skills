@@ -24,6 +24,7 @@ Coding agent skills optimized for claude code.
 | [characterization-test-plan](./characterization-test-plan/SKILL.md)      | test          |
 | [unit-test-plan](./unit-test-plan/SKILL.md)                              | test          |
 | [sre-investigate](./sre-investigate/SKILL.md)                            | maintenance   |
+| [create-release-note](./create-release-note-internal-publication/)       | maintenance   |
 | [anti-pattern](./anti-pattern) for programming languages                 | conventions   |
 
 [__commands](./__commands/) are support tool.
