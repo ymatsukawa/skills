@@ -18,6 +18,7 @@ Coding agent skills optimized for claude code.
 | [rewrite-for-reader](./rewrite-for-reader/SKILL.md)                      | documentation |
 | [skill-alignment](./skill-alignment/SKILL.md)                            | verification  |
 | [tracking-task](./tracking-task/SKILL.md)                                | management    |
+| [design-interview-sheet](./design-interview-sheet/SKILL.md)              | design        |
 | [refine-design-iteratively](./refine-design-iteratively/SKILL.md)        | design        |
 | [refactor-standard](./refactor-standard/SKILL.md)                        | development   |
 | [acceptance-scenario-creation](./acceptance-scenario-creation/SKILL.md)  | test          |
