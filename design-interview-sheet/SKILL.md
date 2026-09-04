@@ -48,6 +48,9 @@ The workflow ends when the sheet is written. Filling in `### Decision` and actin
 {Write background why all designs are required}
 
 ## Design-1: {title}
+### What is changed
+{description in one line}
+
 ### Target
 - {Target of design}
 - ...
@@ -98,6 +101,9 @@ An outside audit found `/admin` is open to the internet. Only a session cookie c
 "The only team access" must be safer, but not on which layer does the job: nginx, the app, or both.
 
 ## Design-1: Access of admin
+### What is changed
+Add ratelimit to nginx's config or add restriction to app's logic.
+
 ### Target
 - HTTP server's config
   - `infra/nginx/conf.d/app.conf`: line 96-100
