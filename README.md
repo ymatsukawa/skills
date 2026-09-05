@@ -27,6 +27,7 @@ Coding agent skills optimized for claude code.
 | [sre-investigate](./sre-investigate/SKILL.md)                            | maintenance   |
 | [create-release-note](./create-release-note-internal-publication/)       | maintenance   |
 | [anti-pattern](./anti-pattern) for programming languages                 | conventions   |
+| [japanese-writing](./japanese-writing/SKILL.md)                          | writing       |
 
 [__commands](./__commands/) are support tool.
 
