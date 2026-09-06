@@ -61,9 +61,13 @@ In order to "double-check", 2 agents are required.
 - ...
 
 ### Detailed reason
-{Write with source code}
+{Write target source code}
 
-### Reference
+- {Explain what is reason}
+- ...
+- ...
+
+### Target
 - `/path/to/code.ext`
 - `/path/to/code.ext`
 
@@ -100,9 +104,11 @@ for rows.Next() {
     orders = append(orders, o)
 }
 ```
-The customer lookup runs inside the row loop, so 40,000 orders issue 40,001 queries. Each round trip costs about 1 ms on the current network, which alone accounts for the 40 s response seen in that tenant's logs.
 
-### Reference
+- The customer lookup runs inside the row loop, so 40,000 orders issue 40,001 queries.
+- Each round trip costs about 1 ms on the current network, which alone accounts for the 40 s response seen in that tenant's logs.
+
+### Target
 - `internal/order/repository.go`
 - `internal/order/handler.go`
 
@@ -121,9 +127,11 @@ db.SetMaxOpenConns(20)
 db.SetMaxIdleConns(20)
 db.SetConnMaxLifetime(30 * time.Minute)
 ```
-The pool is fixed and shared by all handlers. Two concurrent large-tenant requests keep it near saturation for tens of seconds, so `/health` and `/me` queue behind them and show latency spikes with no code path in common.
 
-### Reference
+- The pool is fixed and shared by all handlers.
+- Two concurrent large-tenant requests keep it near saturation for tens of seconds, so `/health` and `/me` queue behind them and show latency spikes with no code path in common.
+
+### Target
 - `internal/db/pool.go`
 - `internal/health/handler.go`
 
@@ -144,9 +152,11 @@ func (h *Handler) ListOrders(w http.ResponseWriter, req *http.Request) {
     ...
 }
 ```
-Fixing the N+1 alone leaves a path where any future slow query outlives its request. Passing `req.Context()` lets cancellation propagate, so the pool recovers as soon as clients time out.
 
-### Reference
+- Fixing the N+1 alone leaves a path where any future slow query outlives its request.
+- Passing `req.Context()` lets cancellation propagate, so the pool recovers as soon as clients time out.
+
+### Target
 - `internal/order/handler.go`
 - `internal/order/repository.go`
 ````
