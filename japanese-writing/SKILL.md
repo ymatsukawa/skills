@@ -26,7 +26,7 @@ Japanese lets you stretch a sentence endlessly, and the point gets lost.
 When an explanatory sentence exceeds 50 characters, these problems occur:
 
 - The points are not organized
-- So, reader has cost about thinking what is discussed
+- So, readers have cost about thinking what is discussed
 
 **How to follow method**:
 - Use bullet points
@@ -50,13 +50,13 @@ OK:
 **Why**
 Because of Japanese feature, the point tends to land at the end of a sentence.
 
-**Detailed reason**
+**Detailed reason**:
 English is a language for explaining and moving people, opposite of Japanese is a language for decorating words for emotion.
 
 So the following can happen:
 
 - The point is tended to land at the end of the sentence
-- So, reader should reconsider "what is the point?"
+- So, readers have to reconsider "what is the point?"
 
 Example: the point is "did you check the logs". Decoration comes before it.
 ```text
