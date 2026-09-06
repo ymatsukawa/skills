@@ -12,7 +12,7 @@ Coding agent skills optimized for claude code.
 | [gap-analysis](./gap-analysis/SKILL.md)                                  | analysis      |
 | [handoff-outlier](./handoff-outlier/SKILL.md)                            | analysis      |
 | [impact-analysis](./impact-analysis/SKILL.md)                            | analysis      |
-| [investigate-reason](./investigate-reason/SKILL.md)                      | analysis      |
+| [inspect-reason](./inspect-reason/SKILL.md)                              | analysis      |
 | [review-investigate](./review-investigate/SKILL.md)                      | review        |
 | [html-output](./html-output/SKILL.md)                                    | documentation |
 | [rewrite-for-reader](./rewrite-for-reader/SKILL.md)                      | documentation |
