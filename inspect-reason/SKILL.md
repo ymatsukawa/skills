@@ -52,6 +52,9 @@ In order to "double-check", 2 agents are required.
 
 ```markdown
 # {title}
+## Background of inspection
+{Why inspect followed reason.}
+
 ## Reason-1: {Title}
 * Type: Root cause
 
@@ -83,6 +86,10 @@ In order to "double-check", 2 agents are required.
 **Example of report format**:
 ````markdown
 # Why backend gets slow irregularly
+## Background of inspection
+1 week ago, in production, developer noticed backend of golang got slow irregularly by realtime alert.
+
+It's found that specific tenant was involved but reason was not revealed.
 
 ## Reason-1: N+1 query in order listing for large tenants
 * Type: Root cause
